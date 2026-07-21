@@ -64,17 +64,18 @@ export function AmbientSoundsPanel({
     <aside
       id="sounds-panel"
       className={cn(
-        "music-glass-panel hover-gradient relative z-10 hidden min-h-0 overflow-hidden border-r p-3 transition-all duration-300 ease-out lg:block",
-        !collapsed && "overflow-y-auto p-5"
+        "music-glass-panel hover-gradient relative z-10 mx-4 mt-4 min-h-0 overflow-visible rounded-xl border p-4 transition-all duration-300 ease-out lg:m-0 lg:block lg:overflow-hidden lg:rounded-none lg:border-y-0 lg:border-l-0 lg:border-r lg:p-3",
+        !collapsed && "lg:overflow-y-auto lg:p-5"
       )}
       aria-label="Background sounds"
     >
-      <div className={cn("flex items-center justify-between gap-3", collapsed && "justify-center")}>
+      <div className={cn("flex items-center justify-between gap-3", collapsed && "lg:justify-center")}>
         <div className={cn("transition-all duration-200", collapsed && "hidden opacity-0")}>
           <p className="text-xs font-black uppercase text-primary">Ambient Mixer</p>
           <h1 className="text-xl font-black">Background Sounds</h1>
         </div>
         <Button
+          className="hidden lg:inline-flex"
           variant="icon"
           aria-label={collapsed ? "Expand background sounds panel" : "Minimize background sounds panel"}
           onClick={onToggleCollapsed}
@@ -109,11 +110,11 @@ export function AmbientSoundsPanel({
         </Button>
       </div>
 
-      <div className={cn("mt-6 grid gap-6 transition-all duration-300", collapsed && "pointer-events-none translate-x-4 opacity-0")}>
+      <div className={cn("mt-6 grid gap-5 transition-all duration-300 sm:grid-cols-2 lg:grid-cols-1 lg:gap-6", collapsed && "lg:pointer-events-none lg:translate-x-4 lg:opacity-0")}>
         {Object.entries(groupedSounds).map(([category, categorySounds]) => (
           <section key={category} className="grid gap-3">
             <h2 className="text-xs font-black uppercase text-muted-foreground">{category}</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-3">
               {categorySounds.map((sound) => {
                 const config = sounds[sound.name] || { enabled: false, volume: 40 };
                 const Icon = soundIcons[sound.name] || Volume2;
