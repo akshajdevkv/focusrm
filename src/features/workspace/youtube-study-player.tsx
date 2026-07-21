@@ -138,12 +138,6 @@ export function YoutubeStudyPlayer({
       </div>
 
       <form className="grid gap-2" onSubmit={handleSubmit}>
-        <label
-          className="text-sm font-bold text-muted-foreground"
-          htmlFor="playlist-url"
-        >
-          YouTube video or playlist URL
-        </label>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             id="playlist-url"
