@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ExternalLink, Play } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useWorkspaceStore } from "@/store/workspace-store";
 
@@ -34,7 +33,9 @@ function youtubeEmbed(url: string) {
   try {
     const { playlistId, videoId } = getYoutubeParts(url);
     if (playlistId) {
-      const videoParam = videoId ? `&index=1&v=${encodeURIComponent(videoId)}` : "";
+      const videoParam = videoId
+        ? `&index=1&v=${encodeURIComponent(videoId)}`
+        : "";
       return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(
         playlistId
       )}${videoParam}&rel=0&modestbranding=1&autoplay=0`;
@@ -46,7 +47,11 @@ function youtubeEmbed(url: string) {
   }
 }
 
-export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeUrl?: string }) {
+export function YoutubeStudyPlayer({
+  initialYoutubeUrl = ""
+}: {
+  initialYoutubeUrl?: string;
+}) {
   const loadedSharedUrl = useRef("");
   const [playlistInput, setPlaylistInput] = useState("");
   const [playerMessage, setPlayerMessage] = useState("");
@@ -80,7 +85,8 @@ export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeU
   const hasVideo = Boolean(currentUrl && embedUrl);
 
   useEffect(() => {
-    if (!initialYoutubeUrl || loadedSharedUrl.current === initialYoutubeUrl) return;
+    if (!initialYoutubeUrl || loadedSharedUrl.current === initialYoutubeUrl)
+      return;
 
     loadedSharedUrl.current = initialYoutubeUrl;
     setPlaylist([initialYoutubeUrl]);
@@ -103,24 +109,39 @@ export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeU
   }
 
   return (
-    <Card className="gloss-panel hover-gradient grid gap-4 p-5">
+    <section className="grid h-full gap-4 p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase text-primary">Clean Player</p>
+          <p className="text-xs font-black uppercase text-primary">
+            Clean Player
+          </p>
           <h2 className="gradient-text text-2xl font-black">Study Playlist</h2>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Button variant="icon" aria-label="Previous video" onClick={previousVideo} disabled={!hasVideo}>
+          <Button
+            variant="icon"
+            aria-label="Previous video"
+            onClick={previousVideo}
+            disabled={!hasVideo}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="icon" aria-label="Next video" onClick={nextVideo} disabled={!hasVideo}>
+          <Button
+            variant="icon"
+            aria-label="Next video"
+            onClick={nextVideo}
+            disabled={!hasVideo}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       <form className="grid gap-2" onSubmit={handleSubmit}>
-        <label className="text-sm font-bold text-muted-foreground" htmlFor="playlist-url">
+        <label
+          className="text-sm font-bold text-muted-foreground"
+          htmlFor="playlist-url"
+        >
           YouTube video or playlist URL
         </label>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -131,12 +152,19 @@ export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeU
             onChange={(event) => setPlaylistInput(event.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
           />
-          <Button className="sm:w-28" type="submit" variant="outline" disabled={importPlaylist.isPending}>
+          <Button
+            className="sm:w-28"
+            type="submit"
+            variant="outline"
+            disabled={importPlaylist.isPending}
+          >
             {importPlaylist.isPending ? "Importing" : "Load"}
           </Button>
         </div>
         {playerMessage ? (
-          <p className="text-sm font-semibold text-amber-700">{playerMessage}</p>
+          <p className="text-sm font-semibold text-amber-700">
+            {playerMessage}
+          </p>
         ) : null}
       </form>
 
@@ -170,7 +198,7 @@ export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeU
           </Button>
         </>
       ) : (
-        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-[#ffe3c9]/72 bg-[linear-gradient(135deg,rgba(255,246,235,0.74),rgba(255,229,195,0.44),rgba(101,70,255,0.08))] p-6 text-center shadow-[0_18px_44px_rgba(38,49,99,0.08)]">
+        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-[#ffe3c9]/72 bg-[linear-gradient(135deg,rgba(255,246,235,0.82),rgba(255,229,195,0.52),rgba(255,242,226,0.78))] p-6 text-center shadow-[0_18px_44px_rgba(38,49,99,0.08)]">
           <div className="flex w-full max-w-xl flex-col items-center">
             <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-full border border-[#ffe3c9]/72 bg-[#fff6eb]/70 text-primary shadow-[0_0_32px_rgba(255,122,47,0.12)]">
               <Play className="ml-0.5 h-7 w-7" />
@@ -186,6 +214,6 @@ export function YoutubeStudyPlayer({ initialYoutubeUrl = "" }: { initialYoutubeU
           </div>
         </div>
       )}
-    </Card>
+    </section>
   );
 }
