@@ -511,8 +511,12 @@ export function YoutubeStudyPlayer({
               className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               href="/"
             >
-              <span className="display-serif grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#171717] text-2xl italic text-white">F</span>
-              <span className="display-serif hidden text-3xl leading-none text-neutral-900 sm:inline">Focus Room</span>
+              <span aria-hidden="true" className="logo-mark grid h-11 w-11 shrink-0 place-items-center rounded-md text-3xl leading-none">
+                F
+              </span>
+              <span className="brand-title hidden text-4xl font-normal tracking-tight sm:inline-flex">
+                Focus Room
+              </span>
             </Link>
 
             <div className="flex h-11 items-center gap-3 rounded-full border border-neutral-200 bg-white px-3 shadow-sm sm:px-4">
