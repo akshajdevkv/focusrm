@@ -1,6 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { SiteFooter } from "@/components/site-footer";
 import { useWorkspaceStore } from "@/store/workspace-store";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Lightbulb } from "lucide-react";
@@ -87,9 +88,10 @@ export function StudyDashboard() {
   }, {});
 
   return (
-    <div className="gloss-page min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
-      <AppSidebar active="Dashboard" />
-      <main className="p-6 lg:p-8">
+    <div className="gloss-page flex min-h-screen flex-col">
+      <div className="min-h-screen flex-1 lg:grid lg:grid-cols-[220px_1fr]">
+        <AppSidebar active="Dashboard" />
+        <main className="p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="max-w-5xl">
             <p className="text-sm font-bold uppercase text-primary">Dashboard</p>
@@ -174,7 +176,9 @@ export function StudyDashboard() {
             </div>
           </section>
         </div>
-      </main>
+        </main>
+      </div>
+      <SiteFooter />
     </div>
   );
 }

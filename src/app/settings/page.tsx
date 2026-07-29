@@ -1,6 +1,7 @@
 import { Bookmark, Languages, Mail, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { UserProfileMenu } from "@/components/user-profile-menu";
+import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { AccountNameEditor } from "@/features/settings/account-name-editor";
 import { AccountSecurityActions } from "@/features/settings/account-security-actions";
@@ -33,7 +34,7 @@ export default async function SettingsPage() {
   const name = accountName(user);
 
   return (
-    <main className="min-h-screen bg-[#f7f7f8] text-[#1c1c1c]">
+    <div className="flex min-h-screen flex-col bg-[#f7f7f8] text-[#1c1c1c]">
       <header className="border-b border-neutral-200 bg-[#f7f7f8]">
         <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-6">
           <Link className="inline-flex items-center gap-3" href="/">
@@ -48,7 +49,7 @@ export default async function SettingsPage() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-[220px_minmax(0,1fr)] md:py-14">
+      <main className="mx-auto grid min-h-screen w-full max-w-7xl flex-1 gap-8 px-6 py-10 md:grid-cols-[220px_minmax(0,1fr)] md:py-14">
         <aside>
           <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
             Settings
@@ -157,7 +158,8 @@ export default async function SettingsPage() {
             </Button>
           ) : null}
         </section>
-      </div>
-    </main>
+      </main>
+      <SiteFooter showSignIn={!user} />
+    </div>
   );
 }

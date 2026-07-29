@@ -5,13 +5,15 @@ import {
   ArrowRight,
   Bookmark,
   ListVideo,
-  Search
+  Search,
+  SearchX
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SiteFooter } from "@/components/site-footer";
 import { UserProfileMenu } from "@/components/user-profile-menu";
 import { normalizeLearningQuery } from "@/lib/learning-query";
 import { useWorkspaceStore } from "@/store/workspace-store";
@@ -130,7 +132,7 @@ export function PlaylistSearchResults({
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f8] text-[#1c1c1c]">
+    <div className="flex min-h-screen flex-col bg-[#f7f7f8] text-[#1c1c1c]">
       <header className="sticky top-0 z-20 border-b border-neutral-200 bg-[#f7f7f8]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center">
           <Link className="inline-flex shrink-0 items-center gap-3" href="/">
@@ -156,7 +158,7 @@ export function PlaylistSearchResults({
         </div>
       </header>
 
-      <section className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 lg:py-14">
+      <main className="mx-auto min-h-screen w-full max-w-[1500px] flex-1 px-5 py-10 sm:px-8 lg:py-14">
         <div className="mb-9 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
             {showBookmarks ? "Saved courses" : "Structured playlists"}
@@ -184,12 +186,6 @@ export function PlaylistSearchResults({
           ) : null}
         </div>
 
-        {!showBookmarks && query.length < 2 ? (
-          <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-neutral-600">
-            Enter a topic above to discover relevant educational playlists.
-          </div>
-        ) : null}
-
         {!showBookmarks && playlists.isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }, (_, index) => <ResultSkeleton key={index} />)}
@@ -209,11 +205,26 @@ export function PlaylistSearchResults({
           </div>
         ) : null}
 
-        {visiblePlaylists.length === 0 && bookmarksReady && (!playlists.isLoading || showBookmarks) ? (
-          <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-neutral-600">
-            {showBookmarks
-              ? "You haven’t bookmarked any courses yet."
-              : "No playlists matched this search. Try a broader topic."}
+        {visiblePlaylists.length === 0 && bookmarksReady && (
+          showBookmarks || (query.length >= 2 && playlists.isSuccess)
+        ) ? (
+          <div
+            className="grid min-h-[320px] place-items-center text-center md:min-h-[calc(100vh-25rem)]"
+            data-testid={showBookmarks ? "no-bookmarks" : "no-courses-found"}
+          >
+            <div className="max-w-md">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-blue-50 text-blue-600">
+                <SearchX className="h-7 w-7" />
+              </span>
+              <h2 className="display-serif mt-5 text-3xl text-neutral-900">
+                {showBookmarks ? "No bookmarks yet" : "No courses found"}
+              </h2>
+              <p className="mt-2 text-base leading-7 text-neutral-500">
+                {showBookmarks
+                  ? "Courses you bookmark will appear here."
+                  : "Try another topic or use a broader search."}
+              </p>
+            </div>
           </div>
         ) : null}
 
@@ -283,7 +294,8 @@ export function PlaylistSearchResults({
             })}
           </div>
         ) : null}
-      </section>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

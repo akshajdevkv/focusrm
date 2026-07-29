@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         value={password}
         onChange={(event) => setPassword(event.target.value)}
       />
+      {mode === "login" ? (
+        <Link className="justify-self-end text-sm font-semibold text-primary hover:underline" href="/auth/reset-password">
+          Forgot password?
+        </Link>
+      ) : null}
       <Button type="button" onClick={submit} disabled={pending}>
         {pending ? "Please wait..." : mode === "login" ? "Log In" : "Sign Up"}
       </Button>

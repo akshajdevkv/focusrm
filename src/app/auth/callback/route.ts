@@ -8,6 +8,11 @@ export async function GET(request: Request) {
     ? `${requestUrl.protocol}//${requestHost}`
     : requestUrl.origin;
   const code = requestUrl.searchParams.get("code");
+  const requestedNext = requestUrl.searchParams.get("next");
+  const nextPath =
+    requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/";
   if (code) {
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -18,5 +23,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL("/", publicOrigin));
+  return NextResponse.redirect(new URL(nextPath, publicOrigin));
 }

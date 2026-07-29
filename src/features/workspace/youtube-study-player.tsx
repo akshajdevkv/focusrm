@@ -99,6 +99,43 @@ function playTaskRewardSound() {
   window.setTimeout(() => void audioContext.close(), 650);
 }
 
+function TranscriptSkeleton({ summary = false }: { summary?: boolean }) {
+  if (summary) {
+    return (
+      <div
+        aria-label="Summary loading placeholder"
+        className="animate-pulse rounded-2xl border border-neutral-200 bg-white/75 p-5 sm:p-6"
+        role="status"
+      >
+        <div className="h-7 w-3/5 rounded-lg bg-neutral-200" />
+        <div className="mt-3 h-4 w-1/4 rounded bg-neutral-200" />
+        <div className="mt-6 space-y-3 border-t border-neutral-200 pt-5">
+          <div className="h-4 w-full rounded bg-neutral-200" />
+          <div className="h-4 w-11/12 rounded bg-neutral-200" />
+          <div className="h-4 w-4/5 rounded bg-neutral-200" />
+          <div className="h-4 w-2/3 rounded bg-neutral-200" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div aria-label="Transcript loading placeholder" className="animate-pulse" role="status">
+      <div className="h-11 rounded-xl bg-neutral-100" />
+      <div className="mt-5 space-y-4">
+        {["w-full", "w-11/12", "w-4/5", "w-full", "w-3/4", "w-11/12"].map(
+          (width, index) => (
+            <div className="grid grid-cols-[48px_1fr] gap-3" key={`${width}-${index}`}>
+              <div className="h-4 rounded bg-blue-100" />
+              <div className={`h-4 rounded bg-neutral-200 ${width}`} />
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 function loadYoutubeIframeApi() {
   if (window.YT?.Player) return Promise.resolve(window.YT);
   if (iframeApiPromise) return iframeApiPromise;
@@ -164,7 +201,7 @@ export function YoutubeStudyPlayer({
   const youtubePlayerRef = useRef<YoutubeIframePlayer | null>(null);
   const [playerMessage, setPlayerMessage] = useState("");
   const [learningTab, setLearningTab] = useState<"overview" | "summary">("summary");
-  const [toolPanel, setToolPanel] = useState<"transcript" | "todo" | "timestamps">("transcript");
+  const [toolPanel, setToolPanel] = useState<"transcript" | "todo" | "timestamps">("timestamps");
   const [toolPanelOpen, setToolPanelOpen] = useState(true);
   const [taskTitle, setTaskTitle] = useState("");
   const [timestampNote, setTimestampNote] = useState("");
@@ -685,8 +722,7 @@ export function YoutubeStudyPlayer({
 
                 {learningTab === "summary" ? (
                   <div className="max-w-3xl">
-                    {transcriptLoading ? <p className="text-sm text-neutral-500">Preparing the lesson summary…</p> : null}
-                    {transcriptError ? <p className="text-sm text-neutral-500">{transcriptError}</p> : null}
+                    {transcriptLoading || transcriptError ? <TranscriptSkeleton summary /> : null}
                     {transcript ? (
                       <div
                         className="rounded-2xl border border-neutral-200 bg-white/75 p-5 sm:p-6"
@@ -765,8 +801,7 @@ export function YoutubeStudyPlayer({
 
                     {toolPanel === "transcript" ? (
                       <div className="min-h-0 flex-1 p-4">
-                        {transcriptLoading ? <p className="text-sm text-neutral-500">Loading transcript…</p> : null}
-                        {transcriptError ? <p className="text-sm leading-6 text-neutral-500">{transcriptError}</p> : null}
+                        {transcriptLoading || transcriptError ? <TranscriptSkeleton /> : null}
                         {transcript ? (
                           <>
                             <label className="flex h-11 items-center gap-2 rounded-xl border border-neutral-200 bg-[#f7f7f8] px-3 text-neutral-400 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
