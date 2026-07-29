@@ -57,7 +57,7 @@ export function AmbientSoundsPanel({
     <aside
       id="sounds-panel"
       className={cn(
-        "relative z-10 min-h-0 overflow-hidden rounded-lg bg-[linear-gradient(135deg,rgba(255,246,235,0.88),rgba(255,229,195,0.54),rgba(255,242,226,0.78))] p-5 shadow-sm transition-all duration-300 ease-out",
+        "relative z-10 min-h-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 p-5 shadow-sm transition-all duration-300 ease-out",
         embedded
           ? "xl:min-h-[260px]"
           : "mx-4 mt-4 overflow-visible lg:m-0 lg:block lg:h-screen lg:p-3",
@@ -168,11 +168,11 @@ export function AmbientSoundsPanel({
                   else stopAmbientSound(sound.name);
                 }}
                 className={cn(
-                  "grid h-[84px] w-[84px] place-items-center rounded-2xl border border-white/70 bg-white/34 p-4 text-orange-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_14px_34px_rgba(255,122,47,0.12)] backdrop-blur-xl transition",
-                  "hover:-translate-y-1 hover:border-orange-200 hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,221,180,0.38),rgba(255,122,47,0.18))] hover:text-orange-800 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_18px_44px_rgba(255,122,47,0.2)]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                  "grid h-[84px] w-[84px] place-items-center rounded-xl border border-neutral-200 bg-white p-4 text-neutral-700 shadow-sm backdrop-blur-xl transition",
+                  "hover:-translate-y-1 hover:border-black hover:bg-neutral-50 hover:text-black hover:shadow-md",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
                   config.enabled &&
-                    "border-orange-300/90 bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(255,209,95,0.42),rgba(255,122,47,0.34))] text-orange-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_18px_46px_rgba(255,122,47,0.28)]"
+                    "border-black bg-black text-white shadow-md"
                 )}
               >
                 <Icon className="h-8 w-8" />

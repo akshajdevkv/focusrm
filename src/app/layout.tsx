@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Focus Room",
-  description: "Transform YouTube playlists into a clean learning experience."
+  description: "Turn YouTube into structured, distraction-free courses with topics, notes, summaries, quizzes, and community-made playlists."
 };
 
 export default function RootLayout({

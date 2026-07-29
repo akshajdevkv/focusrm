@@ -1,13 +1,24 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { PlaylistImporter } from "@/features/playlists/playlist-importer";
+import { PlaylistSearchResults } from "@/features/playlists/playlist-search-results";
 
-export default function PlaylistsPage() {
+export default async function PlaylistsPage({
+  searchParams
+}: {
+  searchParams: Promise<{
+    bookmarked?: string | string[];
+    search?: string | string[];
+  }>;
+}) {
+  const params = await searchParams;
+  const search = Array.isArray(params.search) ? params.search[0] : params.search;
+  const bookmarked = Array.isArray(params.bookmarked)
+    ? params.bookmarked[0]
+    : params.bookmarked;
+
   return (
-    <div className="gloss-page min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
-      <AppSidebar active="My Playlists" />
-      <main className="p-6 lg:p-8">
-        <PlaylistImporter />
-      </main>
-    </div>
+    <PlaylistSearchResults
+      initialQuery={search || ""}
+      initialShowBookmarks={bookmarked === "1"}
+      key={`${search || ""}:${bookmarked || ""}`}
+    />
   );
 }

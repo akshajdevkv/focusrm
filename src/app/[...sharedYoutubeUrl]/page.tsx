@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { normalizeYoutubeUrl, youtubeUrlFromSearchRecord } from "@/lib/youtube-url";
+import { normalizeYoutubeUrl, youtubePlaylistId, youtubeUrlFromSearchRecord, youtubeVideoId } from "@/lib/youtube-url";
 
 export default async function SharedYoutubeUrlPage({
   params,
@@ -25,5 +25,7 @@ export default async function SharedYoutubeUrlPage({
 
   if (!youtubeUrl) notFound();
 
-  redirect(`/workspace?url=${encodeURIComponent(youtubeUrl)}`);
+  const videoId = youtubeVideoId(youtubeUrl);
+  const mediaId = youtubePlaylistId(youtubeUrl) || videoId;
+  redirect(mediaId ? `/learn/${mediaId}` : `/learn?url=${encodeURIComponent(youtubeUrl)}`);
 }

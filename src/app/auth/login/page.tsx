@@ -4,10 +4,10 @@ import { AuthForm } from "@/features/auth/auth-form";
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams: Promise<{ redirectTo?: string | string[] }>;
+  searchParams: Promise<{ error?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const redirectTo = Array.isArray(params.redirectTo) ? params.redirectTo[0] : params.redirectTo;
+  const error = Array.isArray(params.error) ? params.error[0] : params.error;
 
   return (
     <main className="gloss-page grid min-h-screen place-items-center px-6">
@@ -16,13 +16,13 @@ export default async function LoginPage({
         <p className="mt-2 text-sm text-muted-foreground">
           Continue to your Focus Room workspace.
         </p>
-        <AuthForm mode="login" redirectTo={redirectTo} />
+        <AuthForm mode="login" />
+        {error ? (
+          <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>
+        ) : null}
         <p className="mt-5 text-sm text-muted-foreground">
           New here?{" "}
-          <Link
-            className="font-bold text-primary"
-            href={`/auth/signup${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`}
-          >
+          <Link className="font-bold text-primary" href="/auth/signup">
             Create an account
           </Link>
         </p>

@@ -2,9 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
-import { normalizeYoutubeUrl, youtubeUrlFromSearchParams } from "@/lib/youtube-url";
+import { normalizeYoutubeUrl, youtubePlaylistId, youtubeUrlFromSearchParams, youtubeVideoId } from "@/lib/youtube-url";
 
-const protectedRoutes = ["/dashboard", "/workspace", "/playlists", "/profile"];
+const protectedRoutes = ["/dashboard", "/workspace", "/learn", "/playlists", "/profile"];
 
 type CookieToSet = {
   name: string;
@@ -20,12 +20,16 @@ export async function middleware(request: NextRequest) {
 
   if (
     (sharedYoutubeUrl || prefixedPathUrl) &&
-    !request.nextUrl.pathname.startsWith("/workspace")
+    !request.nextUrl.pathname.startsWith("/workspace") &&
+    !request.nextUrl.pathname.startsWith("/learn")
   ) {
+    const youtubeUrl = sharedYoutubeUrl || prefixedPathUrl;
+    const videoId = youtubeVideoId(youtubeUrl);
+    const mediaId = youtubePlaylistId(youtubeUrl) || videoId;
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/workspace";
+    redirectUrl.pathname = mediaId ? `/learn/${mediaId}` : "/learn";
     redirectUrl.search = "";
-    redirectUrl.searchParams.set("url", sharedYoutubeUrl || prefixedPathUrl);
+    if (!mediaId) redirectUrl.searchParams.set("url", youtubeUrl);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -49,6 +53,16 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user }
   } = await supabase.auth.getUser();
+
+  if (
+    user &&
+    ["/auth/login", "/auth/signup"].includes(request.nextUrl.pathname)
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
 
   const requiresAuth = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)

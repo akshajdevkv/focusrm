@@ -9,6 +9,8 @@ v3, pnpm, ESLint, and Prettier.
 
 ```bash
 pnpm install
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 cp .env.example .env.local
 pnpm dev
 ```
@@ -44,4 +46,16 @@ user-owned tables and Row Level Security policies.
 - Focus Workspace with Pomodoro, ambient sound mixer, clean YouTube embed, and
   task manager
 - YouTube playlist import route using YouTube Data API v3
+- `youtube-transcript-api` Python function for timestamped manual and auto-generated captions
 - Supabase-backed API routes for tasks and focus session history
+
+## Transcript function
+
+Vercel deploys `api/youtube_transcript.py` with its Python runtime. The course player calls the
+Next.js route at `/api/youtube/transcript?videoId=...`, which uses the Python function in production
+and a YouTube timed-text fallback during ordinary `next dev`. It prefers English captions, falls back
+to the first available language, and returns timestamps plus caption-source metadata.
+
+YouTube may block requests from cloud-provider IP addresses. If that happens, add
+`WEBSHARE_PROXY_USERNAME` and `WEBSHARE_PROXY_PASSWORD` to the Vercel environment. The function
+will automatically use the library's rotating residential proxy integration.

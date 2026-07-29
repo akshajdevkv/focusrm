@@ -61,11 +61,11 @@ function buildCommitmentDays() {
 }
 
 function commitmentShade(count: number) {
-  if (count >= 4) return "border-emerald-700/30 bg-emerald-800 shadow-emerald-900/20";
-  if (count === 3) return "border-emerald-600/30 bg-emerald-600 shadow-emerald-800/18";
-  if (count === 2) return "border-emerald-500/30 bg-emerald-400 shadow-emerald-700/16";
-  if (count === 1) return "border-emerald-300/50 bg-emerald-200 shadow-emerald-500/14";
-  return "border-white/72 bg-white/48";
+  if (count >= 4) return "border-black bg-black";
+  if (count === 3) return "border-neutral-700 bg-neutral-700";
+  if (count === 2) return "border-neutral-500 bg-neutral-500";
+  if (count === 1) return "border-neutral-300 bg-neutral-300";
+  return "border-neutral-200 bg-white";
 }
 
 function dailyIndex(length: number, offset = 0) {
@@ -114,14 +114,14 @@ export function StudyDashboard() {
                 <p className="text-sm font-bold uppercase text-primary">Daily Study Spark</p>
                 <h2 className="text-2xl font-black">Today&apos;s study tip</h2>
               </div>
-              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#ffe3c9]/72 bg-[#fff6eb]/72 px-3 py-1.5 text-xs font-black text-muted-foreground shadow-sm">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs font-black text-muted-foreground shadow-sm">
                 <CalendarDays className="h-3.5 w-3.5 text-primary" />
                 Changes tomorrow
               </span>
             </div>
-            <article className="mt-5 rounded-lg border border-[#ffe3c9]/72 bg-gradient-to-br from-amber-300/32 via-orange-200/26 to-[#fff6eb]/70 p-5 shadow-[0_14px_34px_rgba(38,49,99,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(255,122,47,0.11)]">
+            <article className="mt-5 rounded-lg border border-neutral-200 bg-neutral-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-neutral-400 hover:shadow-md">
               <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-lg border border-[#ffe3c9]/72 bg-[#fff6eb]/78 text-primary shadow-sm">
+                <span className="grid h-10 w-10 place-items-center rounded-lg border border-neutral-200 bg-white text-primary shadow-sm">
                   <Lightbulb className="h-5 w-5" />
                 </span>
                 <p className="text-xs font-black uppercase text-primary">Study tip</p>
@@ -141,7 +141,7 @@ export function StudyDashboard() {
                 {DAY_COUNT} day focus streak map
               </p>
             </div>
-            <div className="mt-6 rounded-lg border border-[#ffe3c9]/72 bg-[#fff6eb]/62 p-4 shadow-sm">
+            <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm">
               <div
                 className="grid w-full grid-flow-col grid-rows-7 gap-1.5"
                 style={{ gridTemplateColumns: `repeat(${WEEK_COUNT}, minmax(0, 1fr))` }}

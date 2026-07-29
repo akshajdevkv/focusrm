@@ -2,7 +2,15 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { FocusSession, SavedPlaylist, Task, TimerMode } from "@/types/focus";
+import {
+  BookmarkedPlaylist,
+  CachedVideoMetadata,
+  FocusSession,
+  SavedPlaylist,
+  Task,
+  TimerMode,
+  TimestampNote
+} from "@/types/focus";
 
 type SoundConfig = {
   enabled: boolean;
@@ -10,16 +18,26 @@ type SoundConfig = {
 };
 
 type WorkspaceState = {
+  hasHydrated: boolean;
   mode: TimerMode;
   durations: Record<TimerMode, number>;
   autoSwitch: boolean;
   chime: boolean;
   sounds: Record<string, SoundConfig>;
   tasks: Task[];
+  timestampNotes: TimestampNote[];
   savedPlaylists: SavedPlaylist[];
   focusSessions: FocusSession[];
   playlistUrls: string[];
   playlistIndex: number;
+  videoWatchProgress: Record<string, { watchedSeconds: number; duration: number }>;
+  videoMetadata: Record<string, CachedVideoMetadata>;
+  playlistCache: Record<
+    string,
+    { cachedAt: string; playlist?: BookmarkedPlaylist; urls: string[] }
+  >;
+  bookmarkedPlaylistIds: string[];
+  bookmarkedPlaylists: Record<string, BookmarkedPlaylist>;
   setMode: (mode: TimerMode) => void;
   setDuration: (mode: TimerMode, minutes: number) => void;
   setAutoSwitch: (enabled: boolean) => void;
@@ -32,6 +50,9 @@ type WorkspaceState = {
   deleteTask: (id: string) => void;
   moveTask: (id: string, direction: "up" | "down") => void;
   clearCompleted: () => void;
+  addTimestampNote: (videoUrl: string, seconds: number, text: string) => void;
+  updateTimestampNote: (id: string, text: string) => void;
+  deleteTimestampNote: (id: string) => void;
   setPlaylist: (urls: string[]) => void;
   savePlaylist: (playlist: Omit<SavedPlaylist, "id" | "savedAt">) => SavedPlaylist;
   playSavedPlaylist: (id: string) => void;
@@ -39,6 +60,19 @@ type WorkspaceState = {
   recordFocusSession: (minutes: number) => void;
   nextVideo: () => void;
   previousVideo: () => void;
+  setPlaylistIndex: (index: number) => void;
+  recordVideoWatch: (url: string, watchedSeconds: number, duration: number) => void;
+  cacheVideoMetadata: (
+    videos: Array<CachedVideoMetadata & { id: string }>
+  ) => void;
+  cachePlaylist: (
+    playlistId: string,
+    urls: string[],
+    playlist?: BookmarkedPlaylist
+  ) => void;
+  togglePlaylistBookmark: (playlist: BookmarkedPlaylist) => void;
+  rememberBookmarkedPlaylists: (playlists: BookmarkedPlaylist[]) => void;
+  setHasHydrated: (hydrated: boolean) => void;
 };
 
 const starterTasks: Task[] = [
@@ -55,16 +89,23 @@ function createId() {
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
+      hasHydrated: false,
       mode: "focus",
       durations: { focus: 25, short: 5, long: 15 },
       autoSwitch: true,
       chime: true,
       sounds: {},
       tasks: starterTasks,
+      timestampNotes: [],
       savedPlaylists: [],
       focusSessions: [],
       playlistUrls: [],
       playlistIndex: 0,
+      videoWatchProgress: {},
+      videoMetadata: {},
+      playlistCache: {},
+      bookmarkedPlaylistIds: [],
+      bookmarkedPlaylists: {},
       setMode: (mode) => set({ mode }),
       setDuration: (mode, minutes) =>
         set((state) => ({
@@ -125,6 +166,29 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         set((state) => ({
           tasks: state.tasks.filter((task) => !task.completed)
         })),
+      addTimestampNote: (videoUrl, seconds, text) =>
+        set((state) => ({
+          timestampNotes: [
+            ...state.timestampNotes,
+            {
+              id: createId(),
+              videoUrl,
+              seconds: Math.max(0, seconds),
+              text,
+              createdAt: new Date().toISOString()
+            }
+          ]
+        })),
+      updateTimestampNote: (id, text) =>
+        set((state) => ({
+          timestampNotes: state.timestampNotes.map((note) =>
+            note.id === id ? { ...note, text } : note
+          )
+        })),
+      deleteTimestampNote: (id) =>
+        set((state) => ({
+          timestampNotes: state.timestampNotes.filter((note) => note.id !== id)
+        })),
       setPlaylist: (playlistUrls) => set({ playlistUrls, playlistIndex: 0 }),
       savePlaylist: (playlist) => {
         const savedPlaylist = {
@@ -171,11 +235,92 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       previousVideo: () =>
         set((state) => ({
           playlistIndex: Math.max(0, state.playlistIndex - 1)
-        }))
+        })),
+      setPlaylistIndex: (index) =>
+        set((state) => ({
+          playlistIndex: Math.max(0, Math.min(state.playlistUrls.length - 1, index))
+        })),
+      recordVideoWatch: (url, watchedSeconds, duration) =>
+        set((state) => {
+          const previous = state.videoWatchProgress[url];
+          const nextDuration = Math.max(duration, previous?.duration || 0);
+          return {
+            videoWatchProgress: {
+              ...state.videoWatchProgress,
+              [url]: {
+                duration: nextDuration,
+                watchedSeconds: Math.max(
+                  previous?.watchedSeconds || 0,
+                  Math.min(nextDuration, Math.max(0, watchedSeconds))
+                )
+              }
+            }
+          };
+        }),
+      cacheVideoMetadata: (videos) =>
+        set((state) => ({
+          videoMetadata: videos.reduce(
+            (metadata, video) => ({
+              ...metadata,
+              [video.id]: {
+                ...metadata[video.id],
+                title: video.title || metadata[video.id]?.title || "",
+                ...(video.description !== undefined
+                  ? { description: video.description }
+                  : {}),
+                ...(video.creator !== undefined ? { creator: video.creator } : {}),
+                ...(video.thumbnailUrl !== undefined
+                  ? { thumbnailUrl: video.thumbnailUrl }
+                  : {})
+              }
+            }),
+            { ...state.videoMetadata }
+          )
+        })),
+      cachePlaylist: (playlistId, urls, playlist) =>
+        set((state) => ({
+          playlistCache: {
+            ...state.playlistCache,
+            [playlistId]: {
+              cachedAt: new Date().toISOString(),
+              playlist,
+              urls
+            }
+          }
+        })),
+      togglePlaylistBookmark: (playlist) =>
+        set((state) => {
+          const bookmarked = state.bookmarkedPlaylistIds.includes(playlist.id);
+          const bookmarkedPlaylists = { ...state.bookmarkedPlaylists };
+          if (bookmarked) delete bookmarkedPlaylists[playlist.id];
+          else bookmarkedPlaylists[playlist.id] = playlist;
+          return {
+            bookmarkedPlaylistIds: bookmarked
+              ? state.bookmarkedPlaylistIds.filter((id) => id !== playlist.id)
+              : [...state.bookmarkedPlaylistIds, playlist.id],
+            bookmarkedPlaylists
+          };
+        }),
+      rememberBookmarkedPlaylists: (playlists) =>
+        set((state) => ({
+          bookmarkedPlaylists: playlists.reduce(
+            (bookmarks, playlist) => {
+              if (state.bookmarkedPlaylistIds.includes(playlist.id)) {
+                bookmarks[playlist.id] = playlist;
+              }
+              return bookmarks;
+            },
+            { ...state.bookmarkedPlaylists }
+          )
+        })),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated })
     }),
     {
       name: "focus-room-workspace",
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      }
     }
   )
 );

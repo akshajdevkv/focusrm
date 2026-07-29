@@ -4,16 +4,16 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-[linear-gradient(135deg,#6a45ff,#ff7a2f,#ffd15f)] bg-[length:180%_180%] px-4 text-primary-foreground shadow-[0_16px_34px_rgba(99,72,255,0.25)] hover:-translate-y-0.5 hover:bg-[position:100%_50%] hover:brightness-105",
+          "border border-black bg-black px-4 text-white shadow-sm hover:-translate-y-0.5 hover:bg-neutral-800",
         outline:
-          "border border-[#ffe3c9]/72 bg-[#fff6eb]/78 px-4 text-foreground shadow-[0_8px_20px_rgba(38,49,99,0.06)] hover:-translate-y-0.5 hover:bg-[#fff9f1]",
-        ghost: "px-3 hover:-translate-y-0.5 hover:bg-white/40",
-        icon: "h-10 w-10 border border-[#ffe3c9]/72 bg-[#fff6eb]/78 shadow-sm hover:-translate-y-0.5 hover:bg-[#fff9f1]"
+          "border border-neutral-300 bg-white px-4 text-black shadow-sm hover:-translate-y-0.5 hover:border-black",
+        ghost: "px-3 hover:-translate-y-0.5 hover:bg-neutral-100",
+        icon: "h-10 w-10 border border-neutral-300 bg-white text-black shadow-sm hover:-translate-y-0.5 hover:border-black"
       },
       size: {
         default: "h-10",

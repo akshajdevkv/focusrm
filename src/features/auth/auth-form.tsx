@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export function AuthForm({ mode, redirectTo = "/workspace" }: { mode: "login" | "signup"; redirectTo?: string }) {
+export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const supabase = createSupabaseBrowserClient();
-  const nextPath = redirectTo.startsWith("/") ? redirectTo : "/workspace";
+  const nextPath = "/";
 
   async function submit() {
     setPending(true);
@@ -28,7 +29,8 @@ export function AuthForm({ mode, redirectTo = "/workspace" }: { mode: "login" | 
             options: {
               emailRedirectTo: redirectTo,
               data: {
-                product_name: "Focus Room"
+                product_name: "Focus Room",
+                display_name: name.trim()
               }
             }
           });
@@ -49,23 +51,26 @@ export function AuthForm({ mode, redirectTo = "/workspace" }: { mode: "login" | 
     setPending(false);
   }
 
-  async function googleSignIn() {
-    const redirectTo = `${location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo }
-    });
-  }
-
   return (
     <div className="mt-6 grid gap-3">
+      {mode === "signup" ? (
+        <Input
+          autoComplete="name"
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+      ) : null}
       <Input
+        autoComplete="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
       />
       <Input
+        autoComplete={mode === "login" ? "current-password" : "new-password"}
         type="password"
         placeholder="Password"
         value={password}
@@ -73,9 +78,6 @@ export function AuthForm({ mode, redirectTo = "/workspace" }: { mode: "login" | 
       />
       <Button type="button" onClick={submit} disabled={pending}>
         {pending ? "Please wait..." : mode === "login" ? "Log In" : "Sign Up"}
-      </Button>
-      <Button type="button" variant="outline" onClick={googleSignIn} disabled={pending}>
-        Sign in with Google
       </Button>
       {message ? <p className="text-sm font-semibold text-muted-foreground">{message}</p> : null}
     </div>

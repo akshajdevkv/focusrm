@@ -85,7 +85,7 @@ export function PomodoroTimer() {
             Pomodoro Timer
           </h1>
         </div>
-        <div className="grid w-full grid-cols-3 rounded-lg border border-[#ffe3c9]/72 bg-[#fff6eb]/70 p-1 shadow-inner">
+        <div className="grid w-full grid-cols-3 rounded-lg border border-neutral-200 bg-neutral-100 p-1 shadow-inner">
           {(Object.keys(modeLabels) as TimerMode[]).map((candidate) => (
             <button
               key={candidate}
@@ -109,10 +109,10 @@ export function PomodoroTimer() {
         </div>
       </div>
 
-      <div className="grid gap-3 rounded-lg border border-[#ffe3c9]/72 bg-[linear-gradient(135deg,rgba(255,246,235,0.88),rgba(255,229,195,0.54),rgba(255,242,226,0.78))] p-4 shadow-sm">
+      <div className="grid gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm">
         <div className="grid min-h-28 place-items-center text-center">
           <div>
-            <div className="font-mono text-5xl font-black leading-none text-[#0a1531] md:text-6xl">
+            <div className="font-mono text-5xl font-black leading-none text-black md:text-6xl">
               {minutes}:{seconds}
             </div>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">

@@ -105,7 +105,7 @@ export function PlaylistImporter() {
           </div>
           {message ? <p className="text-sm font-semibold text-primary">{message}</p> : null}
           {importPlaylist.error ? (
-            <p className="text-sm font-semibold text-amber-700">
+            <p className="text-sm font-semibold text-neutral-700">
               Saved in embed mode. It will play in the workspace even without YouTube API metadata.
             </p>
           ) : null}
@@ -143,7 +143,7 @@ export function PlaylistImporter() {
                 aria-label={`Watch ${playlist.title}`}
                 onClick={() => {
                   playSavedPlaylist(playlist.id);
-                  router.push("/workspace");
+                  router.push("/learn");
                 }}
               >
                 <Play className="h-5 w-5" />

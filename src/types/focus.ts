@@ -7,6 +7,14 @@ export type Task = {
   sortOrder: number;
 };
 
+export type TimestampNote = {
+  id: string;
+  videoUrl: string;
+  seconds: number;
+  text: string;
+  createdAt: string;
+};
+
 export type AmbientSound = {
   category: "Nature" | "Weather" | "Ambience" | "Music";
   name: string;
@@ -28,6 +36,23 @@ export type PlaylistVideo = {
   id: string;
   title: string;
   thumbnailUrl?: string;
+};
+
+export type CachedVideoMetadata = {
+  title: string;
+  description?: string;
+  creator?: string;
+  thumbnailUrl?: string;
+};
+
+export type BookmarkedPlaylist = {
+  id: string;
+  title: string;
+  description: string;
+  creator: string;
+  thumbnailUrl: string;
+  firstVideoId: string;
+  videoCount: number;
 };
 
 export type SavedPlaylist = {

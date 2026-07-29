@@ -1,51 +1,65 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, BookOpen, Clock3, Focus, Play, ShieldCheck, Volume2 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, BookOpen, Bookmark, CheckCircle2, FileText, ListTree, MousePointer2, Play, Search, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { normalizeLearningQuery } from "@/lib/learning-query";
 
-const studyModes = ["Deep Work", "Exam Prep", "Lecture Review", "Reading", "Research"];
+const titleLetters = Array.from("Focus Room");
+const studyTopics = [
+  "Python",
+  "calculus",
+  "graphic design",
+  "personal finance",
+  "photography",
+  "Spanish",
+  "music theory",
+  "machine learning",
+  "public speaking"
+];
 const features = [
   {
     icon: Play,
-    title: "Distraction-free YouTube",
-    description: "Turn playlists into a clean player without comments, trends, or suggested rabbit holes."
+    title: "A distraction-free player",
+    description: "Watch educational videos without comments, Shorts, suggested videos, or recommendation loops competing for your attention."
   },
   {
-    icon: Clock3,
-    title: "Built-in Pomodoro",
-    description: "Session modes, custom durations, break switching, and completion chimes live above the player."
+    icon: ListTree,
+    title: "Playlists become courses",
+    description: "Open a YouTube playlist as ordered lessons with real video titles, completion status, and progress across the whole course."
   },
   {
-    icon: Volume2,
-    title: "Ambient study layer",
-    description: "Mix rain, library ambience, ocean waves, or focus noise directly inside the workspace."
+    icon: FileText,
+    title: "Transcript and notes",
+    description: "Search the video transcript, jump to exact timestamps, and keep timestamped notes beside the lesson."
   },
   {
-    icon: BookOpen,
-    title: "Tasks and progress",
-    description: "Keep study tasks beside the video and save focus history for later review."
+    icon: Bookmark,
+    title: "Save courses for later",
+    description: "Bookmark any playlist or video from search or the learning page, then return to everything you saved from one place."
   }
 ];
 const whyFocusRoom = [
   {
-    icon: Focus,
-    title: "Built around attention",
+    icon: BookOpen,
+    title: "Structured like a course",
     description:
-      "Focus Room keeps the learning material, timer, tasks, and ambience together so studying does not require bouncing between noisy tabs."
+      "Turn individual videos and playlists into ordered lessons with clear topics, progress, notes, and opportunities to practise what you learn."
   },
   {
     icon: ShieldCheck,
-    title: "Stay on Track",
+    title: "Designed for focus",
     description:
-      "Instead of competing with recommendation feeds and comment threads, the workspace centers one lesson at a time and saves your progress."
+      "The learning interface stays deliberate and uncluttered. Extra tools remain out of the way until you choose to open them."
   },
   {
-    icon: BookOpen,
-    title: "Made for repeat study sessions",
+    icon: CheckCircle2,
+    title: "Get meaningful work done",
     description:
-      "Playlist tracking, focus history, and simple daily study tips make it feel like a study desk, not another video app."
+      "Turn intention into finished lessons with clear next steps, visible progress, and a focused space that helps you follow through."
   }
 ];
 
@@ -54,48 +68,66 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 }
 };
 
-export function GlossyLanding() {
+export function GlossyLanding({ userName = "" }: { userName?: string }) {
   const { scrollY } = useScroll();
+  const reduceMotion = useReducedMotion();
   const liquidY = useTransform(scrollY, [0, 800], [0, 90]);
+  const heroContentY = useTransform(scrollY, [0, 650], [0, -44]);
+  const geometrySlowY = useTransform(scrollY, [0, 900], [0, 68]);
+  const geometryFastY = useTransform(scrollY, [0, 900], [0, 142]);
+  const [topicIndex, setTopicIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setTopicIndex((current) => (current + 1) % studyTopics.length);
+    }, 2200);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
-    <main className="home-liquid-page relative min-h-screen overflow-hidden text-[#0a1531]">
+    <main className="home-liquid-page relative min-h-screen overflow-hidden text-black">
       <div className="gloss-grid pointer-events-none fixed inset-0 -z-10 opacity-25" />
       <motion.div
         aria-hidden="true"
-        style={{ y: liquidY }}
+        style={{ y: reduceMotion ? 0 : liquidY }}
         className="home-liquid-field pointer-events-none absolute inset-x-0 top-0 z-0 h-[720px]"
       >
         <div className="liquid-sweep liquid-sweep-top" />
         <div className="liquid-sweep liquid-sweep-mid" />
         <div className="liquid-sweep liquid-sweep-low" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometrySlowY }} className="hero-ring hero-ring-large" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometryFastY }} className="hero-shape hero-shape-square" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometrySlowY }} className="hero-shape hero-shape-disc" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometryFastY }} className="hero-shape hero-shape-capsule" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometrySlowY }} className="hero-shape hero-shape-arc" />
+        <motion.div style={{ y: reduceMotion ? 0 : geometryFastY }} className="hero-dot-field" />
       </motion.div>
 
       <motion.header
         initial={{ opacity: 0, y: -18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: "easeOut" }}
-        className="sticky top-0 z-30 border-b border-[#ffe1c4]/70 bg-[#fff1df]/88"
+        className="sticky top-0 z-30 border-b border-black/10 bg-white/90 backdrop-blur-xl"
       >
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           <Link className="inline-flex items-center gap-3" href="/">
-            <motion.span
-              aria-hidden="true"
-              whileHover={{ rotate: -8, y: -2, scale: 1.05 }}
-              className="logo-mark grid h-12 w-12 place-items-center rounded-xl text-4xl leading-none text-secondary-foreground"
-            >
+            <span aria-hidden="true" className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">
               F
-            </motion.span>
-            <span className="brand-title inline-flex text-4xl font-black tracking-tight">
+            </span>
+            <span className="brand-title inline-flex text-4xl font-normal tracking-tight">
               Focus Room
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button asChild variant="outline" className="hidden text-[#f07a2b] sm:inline-flex">
-              <Link href="/auth/login">Sign in</Link>
-            </Button>
+            {!userName ? (
+              <Button asChild variant="outline" className="hidden sm:inline-flex">
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+            ) : null}
             <Button asChild>
-              <Link href="/workspace">
+              <Link href="/learn">
                 Start studying
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -104,63 +136,105 @@ export function GlossyLanding() {
         </nav>
       </motion.header>
 
-      <section className="relative z-10 mx-auto min-h-[760px] max-w-7xl px-6 pb-24 pt-20">
+      <section className="relative z-10 mx-auto flex min-h-[580px] max-w-7xl items-center px-6 py-16">
         <motion.div
+          style={{ y: reduceMotion ? 0 : heroContentY }}
           variants={fadeUp}
           initial="hidden"
           animate="visible"
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-5xl"
+          className="mx-auto w-full max-w-5xl text-center"
         >
-          <h1 className="display-serif max-w-6xl leading-[0.98] tracking-normal text-[clamp(3.8rem,8vw,7.4rem)]">
-            <span className="bg-[linear-gradient(105deg,#172d75_0%,#3d2bdb_48%,#ff7a2f_100%)] bg-clip-text text-transparent">
-              Study without distractions.
-            </span>
+          {userName ? (
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08, duration: 0.4 }}
+              className="mb-6 text-sm font-semibold uppercase tracking-[0.16em] text-blue-600"
+            >
+              Welcome back, {userName}
+            </motion.p>
+          ) : null}
+          <h1 className="max-w-6xl leading-[0.98] tracking-[-0.06em] text-[clamp(3.8rem,8vw,7.4rem)]">
+            <motion.span
+              className="typing-title display-serif"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.065, delayChildren: 0.15 } }
+              }}
+            >
+              {titleLetters.map((letter, index) => (
+                <motion.span
+                  key={`${letter}-${index}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
+                    visible: { opacity: 1, y: 0, filter: "blur(0px)" }
+                  }}
+                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {letter === " " ? "\u00a0" : letter}
+                </motion.span>
+              ))}
+              <span aria-hidden="true" className="typing-caret" />
+            </motion.span>
           </h1>
-          <p className="display-serif mt-8 max-w-3xl text-2xl leading-9 text-[#66708e]">
-            Bring YouTube, Pomodoro sessions, ambient sound, and study tasks into
-            one glossy workspace built to keep your attention where it belongs.
+          <p className="mx-auto mt-8 max-w-3xl text-xl leading-8 text-neutral-600">
+            Turn YouTube into your personal learning platform—follow structured courses,
+            watch the best educational videos without distractions, and make consistent progress.
           </p>
-          <motion.div
+          <motion.form
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.28, duration: 0.55, ease: "easeOut" }}
-            className="mt-12 flex flex-wrap gap-4"
+            className="mx-auto mt-12 flex max-w-2xl items-center gap-2 rounded-full border border-neutral-300 bg-white p-2 shadow-sm focus-within:border-black focus-within:shadow-md"
+            action="/playlists"
+            method="get"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const query = normalizeLearningQuery(searchQuery);
+              if (query) {
+                window.location.assign(`/playlists?search=${encodeURIComponent(query)}`);
+              }
+            }}
           >
-            <Button asChild size="lg" className="h-14 px-8 text-lg">
-              <Link href="/workspace">
-                Open Focus Workspace
-                <ArrowRight className="h-5 w-5" />
-              </Link>
+            <div className="relative min-w-0 flex-1">
+              <Search aria-hidden="true" className="absolute left-3 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+              <Input
+                aria-label="What do you want to study?"
+                className="h-12 border-0 bg-transparent pl-11 pr-2 text-base shadow-none focus:ring-0"
+                name="search"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                type="search"
+                value={searchQuery}
+              />
+              {!searchQuery ? (
+                <span className="pointer-events-none absolute inset-y-0 left-11 right-2 flex items-center overflow-hidden text-left text-base text-neutral-400">
+                  <AnimatePresence initial={false} mode="wait">
+                    <motion.span
+                      key={studyTopics[topicIndex]}
+                      initial={{ opacity: 0, y: 7, filter: "blur(3px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -7, filter: "blur(3px)" }}
+                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      className="truncate"
+                    >
+                      I want to learn {studyTopics[topicIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              ) : null}
+            </div>
+            <Button size="lg" className="h-12 shrink-0 rounded-full px-5" type="submit">
+              Search
+              <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg">
-              <Link href="/playlists">Import a playlist</Link>
-            </Button>
-          </motion.div>
+          </motion.form>
         </motion.div>
       </section>
 
-      <section className="border-y border-[#ffe3c9]/72 bg-[#fff1df]/68 px-6 py-8">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ staggerChildren: 0.07 }}
-          className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 text-2xl font-black text-[#17213f]/74"
-        >
-          {studyModes.map((mode) => (
-            <motion.span
-              key={mode}
-              variants={fadeUp}
-              className="bg-[linear-gradient(90deg,#172d75,#5547ff,#ff7a2f)] bg-clip-text text-transparent"
-            >
-              {mode}
-            </motion.span>
-          ))}
-        </motion.div>
-      </section>
-
-      <section id="focus-tools" className="relative mx-auto max-w-7xl px-6 py-28">
+      <section id="focus-tools" className="relative mx-auto max-w-7xl px-6 pb-28 pt-28">
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -169,9 +243,9 @@ export function GlossyLanding() {
           transition={{ duration: 0.55, ease: "easeOut" }}
           className="max-w-3xl"
         >
-          <p className="text-lg font-semibold text-[#5738ff]">Focus tools for every learning session</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">A better way to learn from video</p>
           <h2 className="display-serif gradient-text mt-5 text-5xl leading-tight md:text-7xl">
-            A workspace that feels quiet, polished, and alive.
+            From passive watching to active learning.
           </h2>
         </motion.div>
         <motion.div
@@ -188,45 +262,100 @@ export function GlossyLanding() {
                 key={feature.title}
                 variants={fadeUp}
                 whileHover={{ y: -8, scale: 1.015 }}
-                className="gloss-panel hover-lift hover-gradient rounded-lg p-6"
+                className="gloss-panel hover-lift hover-gradient rounded-md p-6 [container-type:inline-size]"
               >
-                <div className="mb-8 grid h-12 w-12 place-items-center rounded-lg bg-[linear-gradient(135deg,#5738ff,#ff7a2f)] text-white shadow-lg">
+                <div className="mb-8 grid h-11 w-11 place-items-center rounded-md bg-black text-white">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-2xl font-black">{feature.title}</h3>
-                <p className="mt-4 leading-7 text-[#66708e]">{feature.description}</p>
+                <h3 className="display-serif text-[clamp(1.55rem,10cqw,2.1rem)] leading-[1.08]">{feature.title}</h3>
+                <p className="mt-4 leading-7 text-neutral-600">{feature.description}</p>
               </motion.article>
             );
           })}
         </motion.div>
       </section>
 
-      <section id="why-focus-room" className="relative mx-auto max-w-7xl px-6 pb-32 pt-10 md:pt-16">
+      <section id="why-focus-room" className="relative mx-auto flex max-w-7xl flex-col px-6 pb-32 pt-10 md:pt-16">
         <motion.div
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-120px" }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end"
+          className="order-2 mt-28 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center"
         >
           <div>
-            <p className="text-lg font-semibold text-[#5738ff]">Why Focus Room?</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">From videos to courses</p>
             <h2 className="display-serif gradient-text mt-5 pb-4 text-5xl leading-[1.16] md:text-7xl md:leading-[1.14]">
-              It turns watching into studying.
+              Learning designed around you.
             </h2>
           </div>
-          <p className="max-w-2xl text-xl leading-9 text-[#66708e]">
-            Most video platforms are designed to keep you browsing. Focus Room is designed to help you finish:
-            import what you want to learn, remove the extra noise, and keep your session tools in one place.
+          <p className="max-w-2xl text-xl leading-9 text-neutral-600">
+            Focus Room organizes educational videos into structured courses built for understanding,
+            progress, and completion. Learn from courses created by people you trust, or build and
+            share one of your own.
           </p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="order-1 grid overflow-hidden rounded-[2rem] border border-blue-100/70 bg-blue-50/25 shadow-sm lg:grid-cols-[0.85fr_1.15fr]"
+        >
+          <div className="p-7 md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-500">Instantly open any video</p>
+            <h3 className="display-serif mt-4 text-4xl leading-tight text-black md:text-5xl">
+              One small edit. A better way to watch.
+            </h3>
+            <p className="mt-5 max-w-lg leading-7 text-neutral-600">
+              Place <span className="font-semibold text-black">focusroom.club/</span> before any YouTube URL.
+              The video or playlist opens directly in Focus Room&apos;s clean learning workspace.
+            </p>
+          </div>
+          <div className="relative min-h-[280px] overflow-hidden border-t border-blue-100/60 bg-white/70 p-6 lg:border-l lg:border-t-0 md:p-9">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="mb-4 flex gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
+                <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
+                <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
+              </div>
+              <div className="min-w-0 overflow-hidden rounded-full border border-neutral-200 bg-neutral-50 px-4 py-3 font-mono text-xs md:text-sm">
+                <div className="flex min-w-0 items-center">
+                  <span className="prefix-typing font-semibold text-blue-600">
+                    focusroom.club/
+                  </span>
+                  <span className="truncate text-neutral-500">youtube.com/watch?v=dQw4w9WgXcQ</span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ backgroundColor: ["#f7f7f8", "#f7f7f8", "#eff6ff", "#eff6ff", "#f7f7f8"] }}
+                transition={{ duration: 2.2, repeat: Infinity, times: [0, 0.24, 0.36, 0.68, 1] }}
+                className="mt-5 inline-flex rounded-full border border-blue-100 px-4 py-2 text-sm font-semibold text-blue-600"
+              >
+                + focusroom.club/
+              </motion.div>
+            </div>
+            <motion.div
+              aria-hidden="true"
+              animate={{
+                left: ["78%", "38%", "38%", "78%"],
+                top: ["78%", "62%", "62%", "78%"],
+                scale: [1, 1, 0.86, 1]
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, times: [0, 0.24, 0.34, 1], ease: [0.16, 1, 0.3, 1] }}
+              className="absolute z-20 text-blue-600 drop-shadow-sm"
+            >
+              <MousePointer2 className="h-8 w-8 fill-blue-100" strokeWidth={2} />
+            </motion.div>
+          </div>
         </motion.div>
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-120px" }}
           transition={{ staggerChildren: 0.09 }}
-          className="mt-12 grid gap-5 md:grid-cols-3"
+          className="order-3 mt-12 grid gap-5 md:grid-cols-3"
         >
           {whyFocusRoom.map((item) => {
             const Icon = item.icon;
@@ -235,13 +364,13 @@ export function GlossyLanding() {
                 key={item.title}
                 variants={fadeUp}
                 whileHover={{ y: -7, scale: 1.01 }}
-                className="gloss-panel-subtle rounded-lg p-7"
+                className="gloss-panel-subtle rounded-md p-7"
               >
-                <div className="mb-7 grid h-11 w-11 place-items-center rounded-lg bg-[#ffe1bd]/70 text-[#5738ff] shadow-sm">
+                <div className="mb-7 grid h-11 w-11 place-items-center rounded-md bg-neutral-100 text-black">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-2xl font-black text-[#352446]">{item.title}</h3>
-                <p className="mt-4 leading-7 text-[#66708e]">{item.description}</p>
+                <h3 className="text-2xl font-medium text-black">{item.title}</h3>
+                <p className="mt-4 leading-7 text-neutral-600">{item.description}</p>
               </motion.article>
             );
           })}
@@ -249,38 +378,29 @@ export function GlossyLanding() {
       </section>
 
       <footer className="gloss-dark border-t border-white/10 px-6 py-12 text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1fr_auto] md:items-start">
+        <div className="mx-auto max-w-7xl">
           <div className="max-w-md">
             <Link className="inline-flex items-center gap-3" href="/">
-              <span className="logo-mark grid h-11 w-11 place-items-center rounded-lg text-3xl leading-none text-secondary-foreground">
+              <span aria-hidden="true" className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">
                 F
               </span>
-              <span className="text-3xl font-black tracking-tight">Focus Room</span>
+              <span className="brand-wordmark text-3xl tracking-tight">Focus Room</span>
             </Link>
             <p className="mt-4 text-sm font-semibold leading-6 text-white/62">
-              A focused study workspace for playlists, tasks, and timed sessions.
+              Structured, distraction-free courses built from the best educational videos on YouTube.
             </p>
           </div>
 
-          <nav className="grid gap-3 text-sm font-bold text-white/70 md:justify-items-end">
-            <Link className="transition hover:-translate-y-0.5 hover:text-white" href="/workspace">
-              Workspace
-            </Link>
-            <Link className="transition hover:-translate-y-0.5 hover:text-white" href="/playlists">
-              Playlists
-            </Link>
-            <Link className="transition hover:-translate-y-0.5 hover:text-white" href="/dashboard">
-              Dashboard
-            </Link>
-          </nav>
         </div>
 
         <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/52 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; akshajdev 2026</p>
+          <p>&copy; 2026 Focus Room. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link className="transition hover:text-white" href="/auth/login">
-              Sign in
-            </Link>
+            {!userName ? (
+              <Link className="transition hover:text-white" href="/auth/login">
+                Sign in
+              </Link>
+            ) : null}
             <Link className="transition hover:text-white" href="/settings">
               Settings
             </Link>

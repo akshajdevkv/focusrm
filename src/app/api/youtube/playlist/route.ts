@@ -33,47 +33,93 @@ export async function POST(request: NextRequest) {
   playlistApiUrl.searchParams.set("id", playlistId);
   playlistApiUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY);
 
-  const apiUrl = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
-  apiUrl.searchParams.set("part", "snippet,contentDetails");
-  apiUrl.searchParams.set("maxResults", "50");
-  apiUrl.searchParams.set("playlistId", playlistId);
-  apiUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY);
+  type PlaylistItem = {
+    snippet?: {
+      title?: string;
+      thumbnails?: { medium?: { url?: string } };
+    };
+    contentDetails?: { videoId?: string };
+  };
 
-  const [playlistResponse, response] = await Promise.all([
+  async function fetchPlaylistItems(id: string) {
+    const items: PlaylistItem[] = [];
+    let pageToken = "";
+
+    do {
+      const apiUrl = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
+      apiUrl.searchParams.set("part", "snippet,contentDetails");
+      apiUrl.searchParams.set("maxResults", "50");
+      apiUrl.searchParams.set("playlistId", id);
+      apiUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY!);
+      if (pageToken) apiUrl.searchParams.set("pageToken", pageToken);
+
+      const response = await fetch(apiUrl, { next: { revalidate: 300 } });
+      if (!response.ok) throw new Error("YouTube playlist import failed.");
+
+      const page = (await response.json()) as {
+        items?: PlaylistItem[];
+        nextPageToken?: string;
+      };
+      items.push(...(page.items || []));
+      pageToken = page.nextPageToken || "";
+    } while (pageToken);
+
+    return items;
+  }
+
+  const [playlistResponse, importedItems] = await Promise.all([
     fetch(playlistApiUrl, { next: { revalidate: 300 } }),
-    fetch(apiUrl, { next: { revalidate: 300 } })
-  ]);
-  if (!response.ok) {
+    fetchPlaylistItems(playlistId)
+  ]).catch(() => [null, null] as const);
+
+  if (!importedItems) {
     return NextResponse.json({ error: "YouTube playlist import failed." }, { status: 502 });
   }
 
-  const playlistData = playlistResponse.ok
+  const playlistData = playlistResponse?.ok
     ? ((await playlistResponse.json()) as {
-        items?: Array<{ snippet?: { title?: string } }>;
+        items?: Array<{
+          snippet?: {
+            channelTitle?: string;
+            description?: string;
+            thumbnails?: { high?: { url?: string }; medium?: { url?: string } };
+            title?: string;
+          };
+        }>;
       })
     : undefined;
 
-  const data = (await response.json()) as {
-    items?: Array<{
-      snippet?: {
-        title?: string;
-        thumbnails?: { medium?: { url?: string } };
-      };
-      contentDetails?: { videoId?: string };
-    }>;
-  };
-
   const videos =
-    data.items
+    importedItems
       ?.map((item) => ({
         id: item.contentDetails?.videoId || "",
         title: item.snippet?.title || "Untitled video",
         thumbnailUrl: item.snippet?.thumbnails?.medium?.url
       }))
-      .filter((video) => video.id) || [];
+      .filter(
+        (video) =>
+          video.id && video.title !== "Deleted video" && video.title !== "Private video"
+      ) || [];
+
+  const playlistSnippet = playlistData?.items?.[0]?.snippet;
+  const title = playlistSnippet?.title || "YouTube Playlist";
 
   return NextResponse.json({
-    title: playlistData?.items?.[0]?.snippet?.title || "YouTube Playlist",
+    playlist: {
+      id: playlistId,
+      title,
+      description: playlistSnippet?.description || "",
+      creator: playlistSnippet?.channelTitle || "YouTube creator",
+      thumbnailUrl:
+        playlistSnippet?.thumbnails?.high?.url ||
+        playlistSnippet?.thumbnails?.medium?.url ||
+        videos[0]?.thumbnailUrl ||
+        "",
+      firstVideoId: videos[0]?.id || "",
+      videoCount: videos.length
+    },
+    playlistId,
+    title,
     videos,
     urls: videos.map((video) => `https://www.youtube.com/watch?v=${video.id}`)
   });

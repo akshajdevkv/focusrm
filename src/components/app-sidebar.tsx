@@ -15,7 +15,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Playlists", href: "/playlists", icon: PlaySquare },
-  { label: "Focus Workspace", href: "/workspace", icon: Workflow },
+  { label: "Focus Workspace", href: "/learn", icon: Workflow },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Logout", href: "/auth/login", icon: LogOut }
 ];
@@ -26,11 +26,11 @@ export function AppSidebar({ active, compact = false }: { active: string; compac
       <Link
         href="/"
         className={cn(
-          "hidden min-h-12 items-center gap-3 rounded-lg px-3 font-black not-italic transition hover:-translate-y-0.5 lg:flex",
+          "hidden min-h-12 items-center gap-3 rounded-lg px-3 font-normal not-italic transition hover:-translate-y-0.5 lg:flex",
           compact && "lg:justify-center lg:px-0 2xl:justify-start 2xl:px-3"
         )}
       >
-        <span className="logo-mark grid h-10 w-10 place-items-center rounded-lg text-2xl text-secondary-foreground">
+        <span aria-hidden="true" className="logo-mark grid h-10 w-10 shrink-0 place-items-center rounded-md text-2xl leading-none">
           F
         </span>
         <span className={cn("brand-title", compact && "lg:hidden 2xl:inline")}>Focus Room</span>
@@ -44,7 +44,7 @@ export function AppSidebar({ active, compact = false }: { active: string; compac
               href={item.href}
               className={cn(
                 "flex min-h-11 items-center justify-center gap-3 rounded-lg px-3 text-sm font-semibold transition hover:bg-white/10 lg:justify-start",
-                "hover:bg-[linear-gradient(135deg,rgba(255,209,95,0.16),rgba(101,70,255,0.2),rgba(229,82,255,0.14))] hover:-translate-y-0.5",
+                "hover:-translate-y-0.5 hover:bg-white/10",
                 active === item.label &&
                   "bg-white/15 shadow-[0_8px_20px_rgba(0,0,0,0.08)]",
                 compact && "lg:justify-center lg:px-0 2xl:justify-start 2xl:px-3",

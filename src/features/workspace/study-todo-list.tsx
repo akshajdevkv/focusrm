@@ -165,7 +165,7 @@ export function StudyTodoList({
         )}
       >
         {tasks.length === 0 ? (
-          <li className="rounded-lg border border-[#ffe3c9]/72 bg-[#fff6eb]/72 p-4 text-sm font-semibold text-muted-foreground shadow-sm">
+          <li className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm font-semibold text-muted-foreground shadow-sm">
             No tasks yet. Add one small next step.
           </li>
         ) : null}
@@ -173,8 +173,8 @@ export function StudyTodoList({
           <li
             key={task.id}
             className={cn(
-              "group grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg border border-[#ffe3c9]/72 bg-[#fff6eb]/64 px-3 py-2 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd4a3] hover:bg-[#fff9f1] hover:shadow-[0_10px_24px_rgba(117,91,62,0.08)]",
-              task.completed && "border-emerald-200/80 bg-emerald-50/70"
+              "group grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-md",
+              task.completed && "border-neutral-300 bg-neutral-100"
             )}
           >
             <button
@@ -183,9 +183,9 @@ export function StudyTodoList({
               type="button"
               onClick={() => toggleTask(task.id)}
               className={cn(
-                "todo-check-button relative grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#d9c7ad] bg-[#fffaf2] text-transparent shadow-sm transition duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fff6eb]",
+                "todo-check-button relative grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-neutral-300 bg-white text-transparent shadow-sm transition duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 task.completed &&
-                  "is-complete border-emerald-500 bg-emerald-500 text-white shadow-[0_8px_18px_rgba(16,185,129,0.24)]"
+                  "is-complete border-black bg-black text-white shadow-sm"
               )}
             >
               <Check className="todo-check-icon h-4 w-4" />

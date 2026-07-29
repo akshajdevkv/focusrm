@@ -34,6 +34,28 @@ export function normalizeYoutubeUrl(value: string) {
   return isYoutubeUrl(withProtocol) ? withProtocol : "";
 }
 
+export function youtubeVideoId(value: string) {
+  const normalized = normalizeYoutubeUrl(value);
+  if (!normalized) return "";
+
+  const parsed = new URL(normalized);
+  const host = parsed.hostname.replace(/^www\./, "");
+  const pathParts = parsed.pathname.split("/").filter(Boolean);
+  const candidate =
+    parsed.searchParams.get("v") ||
+    (host === "youtu.be" ? pathParts[0] : "") ||
+    (["shorts", "embed", "live"].includes(pathParts[0]) ? pathParts[1] : "");
+
+  return candidate && /^[A-Za-z0-9_-]{11}$/.test(candidate) ? candidate : "";
+}
+
+export function youtubePlaylistId(value: string) {
+  const normalized = normalizeYoutubeUrl(value);
+  if (!normalized) return "";
+  const playlistId = new URL(normalized).searchParams.get("list");
+  return playlistId && /^[A-Za-z0-9_-]{10,80}$/.test(playlistId) ? playlistId : "";
+}
+
 export function youtubeUrlFromSearchParams(params: URLSearchParams) {
   for (const key of ["url", "youtube", "u", "video", "playlist"]) {
     const value = params.get(key);
