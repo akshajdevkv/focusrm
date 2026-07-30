@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+function authCallbackUrl(nextPath: string) {
+  const callbackUrl = new URL("/auth/callback", location.origin);
+  callbackUrl.searchParams.set("next", nextPath);
+  return callbackUrl.toString();
+}
+
+export function AuthForm({
+  mode,
+  showResendConfirmation = false
+}: {
+  mode: "login" | "signup";
+  showResendConfirmation?: boolean;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -20,7 +32,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   async function submit() {
     setPending(true);
     setMessage("");
-    const redirectTo = `${location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+    const redirectTo = authCallbackUrl(nextPath);
     const result =
       mode === "login"
         ? await supabase.auth.signInWithPassword({ email, password })
@@ -49,6 +61,27 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     }
 
     setMessage("Check your email to verify your Focus Room account.");
+    setPending(false);
+  }
+
+  async function resendConfirmation() {
+    if (!email.trim()) {
+      setMessage("Enter your email address first.");
+      return;
+    }
+
+    setPending(true);
+    setMessage("");
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: authCallbackUrl(nextPath) }
+    });
+    setMessage(
+      error
+        ? error.message
+        : "A new confirmation email has been sent. Please use the newest link."
+    );
     setPending(false);
   }
 
@@ -85,6 +118,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <Button type="button" onClick={submit} disabled={pending}>
         {pending ? "Please wait..." : mode === "login" ? "Log In" : "Sign Up"}
       </Button>
+      {mode === "login" && showResendConfirmation ? (
+        <Button disabled={pending} onClick={resendConfirmation} type="button" variant="outline">
+          Resend confirmation email
+        </Button>
+      ) : null}
       {message ? <p className="text-sm font-semibold text-muted-foreground">{message}</p> : null}
     </div>
   );

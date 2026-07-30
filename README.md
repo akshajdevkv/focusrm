@@ -19,6 +19,7 @@ Required environment variables:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL` (your canonical production origin, for example `https://focusroom.club`)
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `YOUTUBE_API_KEY`
 
@@ -26,8 +27,8 @@ Required environment variables:
 
 In Supabase, set these values so auth redirects and emails feel like Focus Room:
 
-- Authentication > URL Configuration > Site URL: your app URL, for local dev use `http://localhost:3000`
-- Authentication > URL Configuration > Redirect URLs: add `http://localhost:3000/auth/callback`
+- Authentication > URL Configuration > Site URL: set your canonical production origin (for example `https://focusroom.club`)
+- Authentication > URL Configuration > Redirect URLs: add your production callback (`https://focusroom.club/auth/callback`) and local callback (`http://localhost:3000/auth/callback`)
 - Authentication > Emails > Templates: replace the default Supabase wording with Focus Room copy
 - Authentication > Emails > Templates: make the confirmation button link use `{{ .ConfirmationURL }}`
 - Project Settings > General: set the project display name to `Focus Room`

@@ -24,7 +24,25 @@ export default async function LandingPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const youtubeUrl = youtubeUrlFromSearchRecord(await searchParams);
+  const params = await searchParams;
+  const authError = Array.isArray(params.error) ? params.error[0] : params.error;
+  const authErrorCode = Array.isArray(params.error_code)
+    ? params.error_code[0]
+    : params.error_code;
+  const authErrorDescription = Array.isArray(params.error_description)
+    ? params.error_description[0]
+    : params.error_description;
+  if (authError || authErrorCode) {
+    const loginParams = new URLSearchParams();
+    loginParams.set(
+      "error",
+      authErrorDescription || "Email confirmation could not be completed. Please try again."
+    );
+    if (authErrorCode) loginParams.set("error_code", authErrorCode);
+    redirect(`/auth/login?${loginParams.toString()}`);
+  }
+
+  const youtubeUrl = youtubeUrlFromSearchRecord(params);
   if (youtubeUrl) {
     const videoId = youtubeVideoId(youtubeUrl);
     const mediaId = youtubePlaylistId(youtubeUrl) || videoId;

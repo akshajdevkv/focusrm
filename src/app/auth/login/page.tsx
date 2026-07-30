@@ -7,11 +7,15 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{
     error?: string | string[];
+    error_code?: string | string[];
     message?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const error = Array.isArray(params.error) ? params.error[0] : params.error;
+  const errorCode = Array.isArray(params.error_code)
+    ? params.error_code[0]
+    : params.error_code;
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
 
   return (
@@ -22,7 +26,7 @@ export default async function LoginPage({
         <p className="mt-2 text-sm text-muted-foreground">
           Continue to your Focus Room workspace.
         </p>
-        <AuthForm mode="login" />
+        <AuthForm mode="login" showResendConfirmation={errorCode === "otp_expired"} />
         {error ? (
           <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>
         ) : null}
