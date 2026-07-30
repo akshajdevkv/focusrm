@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import {
+  AuditedCourse,
   BookmarkedPlaylist,
   CachedVideoMetadata,
   FocusSession,
@@ -31,6 +32,7 @@ type WorkspaceState = {
   playlistUrls: string[];
   playlistIndex: number;
   videoWatchProgress: Record<string, { watchedSeconds: number; duration: number }>;
+  learningActivity: Record<string, string[]>;
   videoMetadata: Record<string, CachedVideoMetadata>;
   playlistCache: Record<
     string,
@@ -38,6 +40,7 @@ type WorkspaceState = {
   >;
   bookmarkedPlaylistIds: string[];
   bookmarkedPlaylists: Record<string, BookmarkedPlaylist>;
+  auditedCourses: Record<string, AuditedCourse>;
   setMode: (mode: TimerMode) => void;
   setDuration: (mode: TimerMode, minutes: number) => void;
   setAutoSwitch: (enabled: boolean) => void;
@@ -72,6 +75,8 @@ type WorkspaceState = {
   ) => void;
   togglePlaylistBookmark: (playlist: BookmarkedPlaylist) => void;
   rememberBookmarkedPlaylists: (playlists: BookmarkedPlaylist[]) => void;
+  auditCourse: (course: BookmarkedPlaylist) => void;
+  removeAuditedCourse: (courseId: string) => void;
   setHasHydrated: (hydrated: boolean) => void;
 };
 
@@ -102,10 +107,12 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       playlistUrls: [],
       playlistIndex: 0,
       videoWatchProgress: {},
+      learningActivity: {},
       videoMetadata: {},
       playlistCache: {},
       bookmarkedPlaylistIds: [],
       bookmarkedPlaylists: {},
+      auditedCourses: {},
       setMode: (mode) => set({ mode }),
       setDuration: (mode, minutes) =>
         set((state) => ({
@@ -244,6 +251,14 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         set((state) => {
           const previous = state.videoWatchProgress[url];
           const nextDuration = Math.max(duration, previous?.duration || 0);
+          const now = new Date();
+          const dateKey = [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, "0"),
+            String(now.getDate()).padStart(2, "0")
+          ].join("-");
+          const madeProgress = watchedSeconds > (previous?.watchedSeconds || 0);
+          const activeVideos = state.learningActivity[dateKey] || [];
           return {
             videoWatchProgress: {
               ...state.videoWatchProgress,
@@ -254,7 +269,15 @@ export const useWorkspaceStore = create<WorkspaceState>()(
                   Math.min(nextDuration, Math.max(0, watchedSeconds))
                 )
               }
-            }
+            },
+            learningActivity: madeProgress
+              ? {
+                  ...state.learningActivity,
+                  [dateKey]: activeVideos.includes(url)
+                    ? activeVideos
+                    : [...activeVideos, url]
+                }
+              : state.learningActivity
           };
         }),
       cacheVideoMetadata: (videos) =>
@@ -313,6 +336,23 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             { ...state.bookmarkedPlaylists }
           )
         })),
+      auditCourse: (course) =>
+        set((state) => ({
+          auditedCourses: {
+            ...state.auditedCourses,
+            [course.id]: {
+              ...course,
+              auditedAt:
+                state.auditedCourses[course.id]?.auditedAt || new Date().toISOString()
+            }
+          }
+        })),
+      removeAuditedCourse: (courseId) =>
+        set((state) => {
+          const auditedCourses = { ...state.auditedCourses };
+          delete auditedCourses[courseId];
+          return { auditedCourses };
+        }),
       setHasHydrated: (hasHydrated) => set({ hasHydrated })
     }),
     {

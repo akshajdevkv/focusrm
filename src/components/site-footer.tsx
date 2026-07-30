@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function SiteFooter({ showSignIn = false }: { showSignIn?: boolean }) {
   return (
-    <footer className="gloss-dark relative z-10 border-t border-white/10 px-6 py-12 text-white">
+    <footer className="gloss-dark relative z-10 border-t border-white/10 px-4 py-10 text-white sm:px-6 sm:py-12">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-md">
           <Link className="inline-flex items-center gap-3" href="/">

@@ -55,6 +55,10 @@ export type BookmarkedPlaylist = {
   videoCount: number;
 };
 
+export type AuditedCourse = BookmarkedPlaylist & {
+  auditedAt: string;
+};
+
 export type SavedPlaylist = {
   id: string;
   title: string;

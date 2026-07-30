@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const nextPath =
     requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
       ? requestedNext
-      : "/";
+      : "/dashboard";
   if (code) {
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);

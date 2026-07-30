@@ -36,10 +36,10 @@ export default async function SettingsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f7f8] text-[#1c1c1c]">
       <header className="border-b border-neutral-200 bg-[#f7f7f8]">
-        <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-6">
+        <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Link className="inline-flex items-center gap-3" href="/">
             <span className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">F</span>
-            <span className="brand-title text-3xl">Focus Room</span>
+            <span className="brand-title text-2xl sm:text-3xl">Focus Room</span>
           </Link>
           <span className="hidden h-7 w-px bg-neutral-300 sm:block" />
           <span className="hidden text-sm font-medium text-neutral-500 sm:block">Settings</span>
@@ -49,20 +49,20 @@ export default async function SettingsPage() {
         </div>
       </header>
 
-      <main className="mx-auto grid min-h-screen w-full max-w-7xl flex-1 gap-8 px-6 py-10 md:grid-cols-[220px_minmax(0,1fr)] md:py-14">
-        <aside>
-          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+      <main className="mx-auto grid min-h-screen w-full max-w-7xl flex-1 gap-6 px-4 py-8 sm:px-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 md:py-14">
+        <aside className="flex gap-2 overflow-x-auto pb-2 md:block md:overflow-visible md:pb-0">
+          <p className="mb-3 hidden px-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400 md:block">
             Settings
           </p>
-          <a className="flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 font-semibold text-blue-700" href="#account-heading">
+          <a className="flex shrink-0 items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 font-semibold text-blue-700" href="#account-heading">
             <UserRound className="h-5 w-5" />
             Account
           </a>
-          <a className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-neutral-600 transition hover:bg-white hover:text-neutral-900" href="#bookmarks">
+          <a className="flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-neutral-600 transition hover:bg-white hover:text-neutral-900 md:mt-1" href="#bookmarks">
             <Bookmark className="h-5 w-5" />
             Bookmarks
           </a>
-          <a className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-neutral-600 transition hover:bg-white hover:text-neutral-900" href="#language">
+          <a className="flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-neutral-600 transition hover:bg-white hover:text-neutral-900 md:mt-1" href="#language">
             <Languages className="h-5 w-5" />
             Language
           </a>

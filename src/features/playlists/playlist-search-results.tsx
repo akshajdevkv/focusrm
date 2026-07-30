@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
+  BookOpen,
   Bookmark,
   ListVideo,
   Search,
@@ -134,10 +135,10 @@ export function PlaylistSearchResults({
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f7f8] text-[#1c1c1c]">
       <header className="sticky top-0 z-20 border-b border-neutral-200 bg-[#f7f7f8]/95 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center">
-          <Link className="inline-flex shrink-0 items-center gap-3" href="/">
+        <div className="relative mx-auto flex max-w-[1500px] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center">
+          <Link className="inline-flex shrink-0 items-center gap-3 pr-14 lg:pr-0" href="/">
             <span className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">F</span>
-            <span className="brand-title text-3xl">Focus Room</span>
+            <span className="brand-title text-2xl sm:text-3xl">Focus Room</span>
           </Link>
           <form className="flex w-full items-center gap-2 lg:ml-12 lg:max-w-2xl" onSubmit={handleSearch}>
             <div className="relative min-w-0 flex-1">
@@ -152,7 +153,7 @@ export function PlaylistSearchResults({
             </div>
             <Button className="h-12 rounded-full px-5" type="submit">Search</Button>
           </form>
-          <div className="ml-auto">
+          <div className="absolute right-5 top-4 sm:right-8 lg:static lg:ml-auto">
             <UserProfileMenu />
           </div>
         </div>
@@ -163,7 +164,7 @@ export function PlaylistSearchResults({
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
             {showBookmarks ? "Saved courses" : "Structured playlists"}
           </p>
-          <h1 className="display-serif mt-3 text-4xl leading-tight sm:text-5xl">
+          <h1 className="display-serif mt-3 break-words text-3xl leading-tight [overflow-wrap:anywhere] sm:text-5xl">
             {showBookmarks
               ? "My bookmarks"
               : query
@@ -202,6 +203,20 @@ export function PlaylistSearchResults({
           <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800">
             <p className="font-semibold">We couldn’t load playlist results.</p>
             <p className="mt-1 text-sm">{playlists.error.message}</p>
+          </div>
+        ) : null}
+
+        {!showBookmarks && query.length < 2 ? (
+          <div className="grid min-h-[320px] place-items-center text-center md:min-h-[calc(100vh-25rem)]">
+            <div className="max-w-md">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-blue-50 text-blue-600">
+                <BookOpen className="h-7 w-7" />
+              </span>
+              <h2 className="display-serif mt-5 text-3xl text-neutral-900">No course selected</h2>
+              <p className="mt-2 text-base leading-7 text-neutral-500">
+                Search for a topic above to discover educational courses and playlists.
+              </p>
+            </div>
           </div>
         ) : null}
 
@@ -284,7 +299,7 @@ export function PlaylistSearchResults({
                     </p>
                   ) : null}
                   <span className="mt-auto inline-flex items-center gap-1.5 pr-12 pt-5 text-sm font-semibold text-blue-600">
-                    Start learning
+                    View course
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                   </div>

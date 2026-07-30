@@ -112,12 +112,12 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
         transition={{ duration: 0.55, ease: "easeOut" }}
         className="sticky top-0 z-30 border-b border-black/10 bg-white/90 backdrop-blur-xl"
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <Link className="inline-flex items-center gap-3" href="/">
+        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <Link className="inline-flex min-w-0 items-center gap-2 sm:gap-3" href="/">
             <span aria-hidden="true" className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">
               F
             </span>
-            <span className="brand-title inline-flex text-4xl font-normal tracking-tight">
+            <span className="brand-title inline-flex whitespace-nowrap text-2xl font-normal tracking-tight sm:text-4xl">
               Focus Room
             </span>
           </Link>
@@ -127,7 +127,7 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
                 <Link href="/auth/login">Sign in</Link>
               </Button>
             ) : null}
-            <Button asChild>
+            <Button asChild className="shrink-0 px-3 text-sm sm:px-4">
               <Link href="/learn">
                 Start studying
                 <ArrowRight className="h-4 w-4" />
@@ -137,7 +137,7 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
         </nav>
       </motion.header>
 
-      <section className="relative z-10 mx-auto flex min-h-[580px] max-w-7xl items-center px-6 py-16">
+      <section className="relative z-10 mx-auto flex min-h-[580px] max-w-7xl items-center px-4 py-14 sm:px-6 sm:py-16">
         <motion.div
           style={{ y: reduceMotion ? 0 : heroContentY }}
           variants={fadeUp}
@@ -156,7 +156,7 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
               Welcome back, {userName}
             </motion.p>
           ) : null}
-          <h1 className="max-w-6xl leading-[0.98] tracking-[-0.06em] text-[clamp(3.8rem,8vw,7.4rem)]">
+          <h1 className="max-w-6xl leading-[0.98] tracking-[-0.06em] text-[clamp(3rem,8vw,7.4rem)]">
             <motion.span
               className="typing-title display-serif"
               initial="hidden"
@@ -189,7 +189,7 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.28, duration: 0.55, ease: "easeOut" }}
-            className="mx-auto mt-12 flex max-w-2xl items-center gap-2 rounded-full border border-neutral-300 bg-white p-2 shadow-sm focus-within:border-black focus-within:shadow-md"
+            className="mx-auto mt-12 flex max-w-2xl flex-col items-stretch gap-2 rounded-3xl border border-neutral-300 bg-white p-2 shadow-sm focus-within:border-black focus-within:shadow-md sm:flex-row sm:items-center sm:rounded-full"
             action="/playlists"
             method="get"
             onSubmit={(event) => {

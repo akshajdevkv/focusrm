@@ -15,7 +15,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const supabase = createSupabaseBrowserClient();
-  const nextPath = "/";
+  const nextPath = "/dashboard";
 
   async function submit() {
     setPending(true);

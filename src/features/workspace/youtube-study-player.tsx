@@ -200,7 +200,7 @@ export function YoutubeStudyPlayer({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const youtubePlayerRef = useRef<YoutubeIframePlayer | null>(null);
   const [playerMessage, setPlayerMessage] = useState("");
-  const [learningTab, setLearningTab] = useState<"overview" | "summary">("summary");
+  const [learningTab, setLearningTab] = useState<"overview" | "summary">("overview");
   const [toolPanel, setToolPanel] = useState<"transcript" | "todo" | "timestamps">("timestamps");
   const [toolPanelOpen, setToolPanelOpen] = useState(true);
   const [taskTitle, setTaskTitle] = useState("");
@@ -542,7 +542,7 @@ export function YoutubeStudyPlayer({
 
       {hasVideo ? (
         <>
-          <header className="-mx-5 grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-neutral-200 bg-[#f7f7f8] px-5 py-2.5" aria-label="Course toolbar">
+          <header className="-mx-5 grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-neutral-200 bg-[#f7f7f8] px-5 py-2.5 sm:gap-3 lg:grid-cols-[auto_minmax(220px,1fr)_auto_auto]" aria-label="Course toolbar">
             <Link
               aria-label="Go to Focus Room home"
               className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -551,12 +551,26 @@ export function YoutubeStudyPlayer({
               <span aria-hidden="true" className="logo-mark grid h-11 w-11 shrink-0 place-items-center rounded-md text-3xl leading-none">
                 F
               </span>
-              <span className="brand-title hidden text-4xl font-normal tracking-tight sm:inline-flex">
+              <span className="brand-title hidden whitespace-nowrap text-3xl font-normal tracking-tight md:inline-flex">
                 Focus Room
               </span>
             </Link>
 
-            <div className="flex h-11 items-center gap-3 rounded-full border border-neutral-200 bg-white px-3 shadow-sm sm:px-4">
+            <form
+              action="/playlists"
+              className="relative col-span-3 row-start-2 w-full lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:mx-auto lg:max-w-md"
+            >
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+              <input
+                aria-label="Search for another course"
+                className="h-10 w-full rounded-full border border-neutral-200 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                name="search"
+                placeholder="Search courses"
+                type="search"
+              />
+            </form>
+
+            <div className="col-start-2 row-start-1 flex h-11 items-center gap-3 rounded-full border border-neutral-200 bg-white px-3 shadow-sm sm:px-4 lg:col-start-3">
               <span className="whitespace-nowrap text-xs font-medium text-neutral-600 sm:text-sm">
                 {completedVideos}/{playlistUrls.length} <span className="hidden sm:inline">learning items</span>
               </span>
@@ -573,10 +587,10 @@ export function YoutubeStudyPlayer({
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <span className="min-w-8 text-right text-xs font-semibold text-blue-600">{progressPercent}%</span>
+              <span className="hidden min-w-8 text-right text-xs font-semibold text-blue-600 sm:inline">{progressPercent}%</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="col-start-3 row-start-1 flex items-center gap-2 lg:col-start-4">
               <button
                 aria-label={`${courseBookmarked ? "Remove bookmark from" : "Bookmark"} ${courseBookmark.title}`}
                 aria-pressed={courseBookmarked}
@@ -596,7 +610,7 @@ export function YoutubeStudyPlayer({
           </header>
 
           <div className="grid overflow-hidden rounded-xl border border-neutral-200 bg-[#f7f7f8] lg:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="border-b border-neutral-200 bg-neutral-100/70 lg:border-b-0 lg:border-r">
+            <aside className="order-2 border-b border-neutral-200 bg-neutral-100/70 lg:order-1 lg:border-b-0 lg:border-r">
               <div className="border-b border-neutral-200 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">Course content</p>
                 <h2 className="mt-2 text-lg font-semibold text-neutral-800">
@@ -650,7 +664,7 @@ export function YoutubeStudyPlayer({
               </div>
             </aside>
 
-            <div className="grid min-w-0 bg-[#f7f7f8] xl:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="order-1 grid min-w-0 bg-[#f7f7f8] lg:order-2 xl:grid-cols-[minmax(0,1fr)_auto]">
               <div className="min-w-0">
               <div className="aspect-video overflow-hidden bg-[#171717]">
                 <iframe

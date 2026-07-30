@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, CircleHelp, LogOut, Settings } from "lucide-react";
+import { Bookmark, CircleHelp, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -123,7 +123,11 @@ export function UserProfileMenu({ compact = false }: { compact?: boolean }) {
             </div>
           </div>
 
-          <Link className={`${menuItemClass} mt-2`} href="/playlists?bookmarked=1" role="menuitem">
+          <Link className={`${menuItemClass} mt-2`} href="/dashboard" role="menuitem">
+            <LayoutDashboard className="h-5 w-5" />
+            Dashboard
+          </Link>
+          <Link className={menuItemClass} href="/playlists?bookmarked=1" role="menuitem">
             <Bookmark className="h-5 w-5" />
             My bookmarks
           </Link>

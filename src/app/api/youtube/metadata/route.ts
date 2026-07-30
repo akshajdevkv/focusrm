@@ -11,6 +11,17 @@ type OEmbedResult = {
   thumbnail_url?: string;
 };
 
+function isoDurationSeconds(value = "") {
+  const match = value.match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/);
+  if (!match) return 0;
+  return (
+    Number(match[1] || 0) * 86400 +
+    Number(match[2] || 0) * 3600 +
+    Number(match[3] || 0) * 60 +
+    Number(match[4] || 0)
+  );
+}
+
 export async function POST(request: NextRequest) {
   const parsed = requestSchema.safeParse(await request.json());
   if (!parsed.success) {
@@ -22,7 +33,7 @@ export async function POST(request: NextRequest) {
   if (process.env.YOUTUBE_API_KEY) {
     try {
       const apiUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
-      apiUrl.searchParams.set("part", "snippet");
+      apiUrl.searchParams.set("part", "snippet,contentDetails");
       apiUrl.searchParams.set("id", videoIds.join(","));
       apiUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY);
       const response = await fetch(apiUrl, { next: { revalidate: 86400 } });
@@ -36,6 +47,7 @@ export async function POST(request: NextRequest) {
               thumbnails?: { high?: { url?: string }; medium?: { url?: string } };
               title?: string;
             };
+            contentDetails?: { duration?: string };
           }>;
         };
         const videos = (data.items || []).map((item) => ({
@@ -44,7 +56,8 @@ export async function POST(request: NextRequest) {
           id: item.id || "",
           thumbnailUrl:
             item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || "",
-          title: item.snippet?.title || ""
+          title: item.snippet?.title || "",
+          durationSeconds: isoDurationSeconds(item.contentDetails?.duration)
         }));
         if (videos.length) return NextResponse.json({ videos });
       }
