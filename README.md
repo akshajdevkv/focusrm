@@ -29,6 +29,7 @@ In Supabase, set these values so auth redirects and emails feel like Focus Room:
 
 - Authentication > URL Configuration > Site URL: set your canonical production origin (for example `https://focusroom.club`)
 - Authentication > URL Configuration > Redirect URLs: add your production callback (`https://focusroom.club/auth/callback`) and local callback (`http://localhost:3000/auth/callback`)
+- Authentication > Sign In / Providers > Email: disable `Confirm email` so new users receive a session immediately after signing up
 - Authentication > Emails > Templates: replace the default Supabase wording with Focus Room copy
 - Authentication > Emails > Templates: make the confirmation button link use `{{ .ConfirmationURL }}`
 - Project Settings > General: set the project display name to `Focus Room`
