@@ -72,6 +72,7 @@ export function PlaylistSearchResults({
   const [importOpen, setImportOpen] = useState(initialImportOpen);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [importError, setImportError] = useState("");
+  const [failedThumbnails, setFailedThumbnails] = useState<Record<string, true>>({});
   const [showBookmarks, setShowBookmarks] = useState(initialShowBookmarks);
   const [bookmarksReady, setBookmarksReady] = useState(!initialShowBookmarks);
   const query = normalizedInitialQuery;
@@ -368,13 +369,20 @@ export function PlaylistSearchResults({
                   href={`/learn/${playlist.id}`}
                 >
                   <div className="relative aspect-video overflow-hidden bg-neutral-100">
-                  {playlist.thumbnailUrl ? (
+                  {playlist.thumbnailUrl && !failedThumbnails[playlist.id] ? (
                     <Image
                       alt=""
                       className="object-cover transition duration-500 group-hover:scale-[1.025]"
                       fill
+                      onError={() =>
+                        setFailedThumbnails((failed) => ({
+                          ...failed,
+                          [playlist.id]: true
+                        }))
+                      }
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                       src={playlist.thumbnailUrl}
+                      unoptimized
                     />
                   ) : (
                     <div className="grid h-full place-items-center text-neutral-400">
