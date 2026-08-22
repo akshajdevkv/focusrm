@@ -45,6 +45,22 @@ export type CachedVideoMetadata = {
   thumbnailUrl?: string;
 };
 
+export type CachedTranscript = {
+  cachedAt: string;
+  cues: Array<{ start: number; duration: number; text: string }>;
+  sections: Array<{ start: number; duration: number; text: string }>;
+  language: string;
+  languageCode: string;
+  isGenerated: boolean;
+  video?: {
+    title: string;
+    creator: string;
+    creatorUrl: string;
+    thumbnailUrl: string;
+  };
+  summary: { overview: string; keyPoints?: string[] };
+};
+
 export type BookmarkedPlaylist = {
   id: string;
   title: string;

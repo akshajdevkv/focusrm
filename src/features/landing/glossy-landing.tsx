@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, BookOpen, Bookmark, CheckCircle2, FileText, Link2, ListTree, MousePointer2, Play, Search, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, BookOpen, Bookmark, CheckCircle2, FileText, LayoutDashboard, Link2, ListTree, MousePointer2, Play, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteFooter } from "@/components/site-footer";
 import { normalizeLearningQuery } from "@/lib/learning-query";
-import { normalizeYoutubeUrl, youtubePlaylistId, youtubeVideoId } from "@/lib/youtube-url";
 import { useWorkspaceStore } from "@/store/workspace-store";
 
 const titleLetters = Array.from("Focus Room");
@@ -80,9 +79,6 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
   const geometryFastY = useTransform(scrollY, [0, 900], [0, 142]);
   const [topicIndex, setTopicIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [importOpen, setImportOpen] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [importError, setImportError] = useState("");
   const hasHydrated = useWorkspaceStore((state) => state.hasHydrated);
   const auditedCourses = useWorkspaceStore((state) => state.auditedCourses);
   const latestAuditedCourse = hasHydrated
@@ -93,8 +89,8 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
   const startStudyingHref = userName
     ? latestAuditedCourse?.id
       ? `/learn/${latestAuditedCourse.id}`
-      : "/playlists?import=1"
-    : "/playlists?import=1";
+      : "/import"
+    : "/import";
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -103,25 +99,6 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
 
     return () => window.clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (!importOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setImportOpen(false);
-        setImportError("");
-      }
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [importOpen]);
 
   return (
     <div className="home-liquid-page relative min-h-screen overflow-hidden text-black">
@@ -163,19 +140,25 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
                 <Link href="/auth/login">Sign in</Link>
               </Button>
             ) : null}
+            {userName ? (
+              <Button
+                asChild
+                aria-label="Open dashboard"
+                title="Dashboard"
+                variant="icon"
+              >
+                <Link href="/dashboard">
+                  <LayoutDashboard className="h-5 w-5" />
+                </Link>
+              </Button>
+            ) : null}
             <Button
-              aria-expanded={importOpen}
+              asChild
               aria-label="Import YouTube video or playlist"
-              className={importOpen ? "border-black bg-neutral-100" : ""}
-              onClick={() => {
-                setImportOpen((open) => !open);
-                setImportError("");
-              }}
               title="Import YouTube video or playlist"
-              type="button"
               variant="icon"
             >
-              <Link2 className="h-5 w-5" />
+              <Link href="/import"><Link2 className="h-5 w-5" /></Link>
             </Button>
             {userName ? (
               <Button asChild className="shrink-0 px-3 text-sm sm:px-4">
@@ -192,111 +175,6 @@ export function GlossyLanding({ userName = "" }: { userName?: string }) {
                 </Link>
               </Button>
             )}
-            {importOpen ? (
-              <div
-                aria-labelledby="youtube-import-title"
-                aria-modal="true"
-                className="fixed inset-0 z-50 grid place-items-center overflow-y-auto p-4 sm:p-6"
-                role="dialog"
-              >
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  aria-label="Close YouTube importer"
-                  className="absolute inset-0 bg-[#07111f]/70 backdrop-blur-md"
-                  onClick={() => {
-                    setImportOpen(false);
-                    setImportError("");
-                  }}
-                  type="button"
-                />
-                <motion.form
-                  initial={{ opacity: 0, y: 22, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-white/70 bg-white text-left shadow-[0_32px_100px_rgba(0,0,0,0.34)]"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    const normalizedUrl = normalizeYoutubeUrl(youtubeUrl);
-                    const mediaId = youtubePlaylistId(normalizedUrl) || youtubeVideoId(normalizedUrl);
-                    if (!normalizedUrl || !mediaId) {
-                      setImportError("Paste a valid YouTube video or playlist URL.");
-                      return;
-                    }
-                    setImportError("");
-                    window.location.assign(`/learn/${mediaId}`);
-                  }}
-                >
-                  <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-violet-50">
-                    <span className="absolute -right-10 -top-16 h-44 w-44 rounded-full border-[28px] border-blue-100/70" />
-                    <span className="absolute left-20 top-8 h-3 w-3 rounded-full bg-blue-300" />
-                    <span className="absolute right-32 top-16 h-2 w-2 rounded-full bg-violet-300" />
-                  </div>
-                  <div className="relative p-6 sm:p-8">
-                  <Button
-                    aria-label="Close importer"
-                    className="absolute right-5 top-5 rounded-full border-white/80 bg-white/80 backdrop-blur hover:bg-white"
-                    onClick={() => {
-                      setImportOpen(false);
-                      setImportError("");
-                    }}
-                    type="button"
-                    variant="icon"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <span className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-[0_10px_25px_rgba(37,99,235,0.28)]">
-                    <Play className="h-6 w-6 fill-current" />
-                  </span>
-                  <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-                    No account required
-                  </p>
-                  <h2 className="display-serif mt-2 max-w-md pr-10 text-4xl leading-tight text-neutral-950 sm:text-5xl" id="youtube-import-title">
-                    What do you want to study?
-                  </h2>
-                  <p className="mt-3 max-w-md text-base leading-7 text-neutral-600">
-                    Bring any YouTube lesson or full playlist into a focused workspace with notes, progress, and learning tools.
-                  </p>
-                  <label className="mt-7 block text-sm font-semibold text-neutral-800" htmlFor="youtube-import-url">
-                    YouTube link
-                  </label>
-                  <div className="relative mt-2">
-                    <Link2 aria-hidden="true" className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-                    <Input
-                      aria-describedby={importError ? "header-youtube-import-error" : undefined}
-                      aria-invalid={Boolean(importError)}
-                      aria-label="YouTube video or playlist URL"
-                      autoFocus
-                      className="h-14 rounded-2xl border-neutral-300 bg-[#f8fafc] pl-12 pr-4 text-base shadow-inner focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
-                      id="youtube-import-url"
-                      onChange={(event) => {
-                        setYoutubeUrl(event.target.value);
-                        if (importError) setImportError("");
-                      }}
-                      placeholder="Paste a video or playlist URL"
-                      type="url"
-                      value={youtubeUrl}
-                    />
-                  </div>
-                  {importError ? (
-                    <p className="mt-2 text-sm font-medium text-red-600" id="header-youtube-import-error" role="alert">
-                      {importError}
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-xs leading-5 text-neutral-500">Supports youtube.com, youtu.be, Shorts, live videos, and playlists.</p>
-                  )}
-                  <Button className="mt-6 h-14 w-full rounded-2xl text-base shadow-[0_12px_28px_rgba(0,0,0,0.18)]" type="submit">
-                    Start learning
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <div className="mt-5 flex items-center justify-center gap-2 text-xs text-neutral-500">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    Your link is only used to load the study workspace.
-                  </div>
-                  </div>
-                </motion.form>
-              </div>
-            ) : null}
           </div>
         </nav>
       </motion.header>

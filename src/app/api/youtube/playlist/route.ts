@@ -64,7 +64,10 @@ export async function POST(request: NextRequest) {
       apiUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY!);
       if (pageToken) apiUrl.searchParams.set("pageToken", pageToken);
 
-      const response = await fetch(apiUrl, { next: { revalidate: 300 } });
+      const response = await fetch(apiUrl, {
+        next: { revalidate: 300 },
+        signal: AbortSignal.timeout(8_000)
+      });
       if (!response.ok) throw new Error("YouTube playlist import failed.");
 
       const page = (await response.json()) as {
@@ -79,7 +82,10 @@ export async function POST(request: NextRequest) {
   }
 
   const [playlistResponse, importedItems] = await Promise.all([
-    fetch(playlistApiUrl, { next: { revalidate: 300 } }),
+    fetch(playlistApiUrl, {
+      next: { revalidate: 300 },
+      signal: AbortSignal.timeout(8_000)
+    }),
     fetchPlaylistItems(playlistId)
   ]).catch(() => [null, null] as const);
 
@@ -127,7 +133,10 @@ export async function POST(request: NextRequest) {
       durationUrl.searchParams.set("id", ids.join(","));
       durationUrl.searchParams.set("key", process.env.YOUTUBE_API_KEY!);
       try {
-        const response = await fetch(durationUrl, { next: { revalidate: 86400 } });
+        const response = await fetch(durationUrl, {
+          next: { revalidate: 86400 },
+          signal: AbortSignal.timeout(8_000)
+        });
         if (!response.ok) return 0;
         const data = (await response.json()) as {
           items?: Array<{ contentDetails?: { duration?: string } }>;

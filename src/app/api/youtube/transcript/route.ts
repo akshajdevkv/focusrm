@@ -68,6 +68,22 @@ function transcriptError(code: string): Omit<Extract<TranscriptResult, { error: 
       status: 503
     };
   }
+  if (code === "TranscriptsDisabled") {
+    return {
+      code,
+      error:
+        "Captions are disabled for this video, so a transcript and summary cannot be generated.",
+      status: 404
+    };
+  }
+  if (code === "VideoUnavailable") {
+    return {
+      code,
+      error:
+        "This video is unavailable, so its transcript and summary cannot be loaded.",
+      status: 404
+    };
+  }
   return {
     code: code || "TranscriptUnavailable",
     error: "YouTube captions are unavailable for this video.",

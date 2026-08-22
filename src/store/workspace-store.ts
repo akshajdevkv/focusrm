@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import {
   AuditedCourse,
   BookmarkedPlaylist,
+  CachedTranscript,
   CachedVideoMetadata,
   FocusSession,
   SavedPlaylist,
@@ -34,6 +35,7 @@ type WorkspaceState = {
   videoWatchProgress: Record<string, { watchedSeconds: number; duration: number }>;
   learningActivity: Record<string, string[]>;
   videoMetadata: Record<string, CachedVideoMetadata>;
+  transcriptCache: Record<string, CachedTranscript>;
   playlistCache: Record<
     string,
     { cachedAt: string; playlist?: BookmarkedPlaylist; urls: string[] }
@@ -67,6 +69,10 @@ type WorkspaceState = {
   recordVideoWatch: (url: string, watchedSeconds: number, duration: number) => void;
   cacheVideoMetadata: (
     videos: Array<CachedVideoMetadata & { id: string }>
+  ) => void;
+  cacheTranscript: (
+    videoId: string,
+    transcript: Omit<CachedTranscript, "cachedAt">
   ) => void;
   cachePlaylist: (
     playlistId: string,
@@ -109,6 +115,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       videoWatchProgress: {},
       learningActivity: {},
       videoMetadata: {},
+      transcriptCache: {},
       playlistCache: {},
       bookmarkedPlaylistIds: [],
       bookmarkedPlaylists: {},
@@ -300,6 +307,16 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             { ...state.videoMetadata }
           )
         })),
+      cacheTranscript: (videoId, transcript) =>
+        set((state) => {
+          const entries = Object.entries({
+            ...state.transcriptCache,
+            [videoId]: { ...transcript, cachedAt: new Date().toISOString() }
+          }).sort(
+            ([, left], [, right]) => Date.parse(right.cachedAt) - Date.parse(left.cachedAt)
+          );
+          return { transcriptCache: Object.fromEntries(entries.slice(0, 10)) };
+        }),
       cachePlaylist: (playlistId, urls, playlist) =>
         set((state) => ({
           playlistCache: {

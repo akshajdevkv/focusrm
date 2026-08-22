@@ -20,7 +20,7 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { UserProfileMenu } from "@/components/user-profile-menu";
 import { useWorkspaceStore } from "@/store/workspace-store";
-import type { BookmarkedPlaylist } from "@/types/focus";
+import type { BookmarkedPlaylist, CachedTranscript } from "@/types/focus";
 
 type YoutubeIframePlayer = {
   destroy: () => void;
@@ -45,27 +45,21 @@ declare global {
 }
 
 let iframeApiPromise: Promise<YoutubeIframeApi> | null = null;
+const TRANSCRIPT_LOCAL_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 
-type TranscriptCue = {
-  start: number;
-  duration: number;
-  text: string;
-};
+type TranscriptResult = Omit<CachedTranscript, "cachedAt">;
 
-type TranscriptResult = {
-  cues: TranscriptCue[];
-  sections: TranscriptCue[];
-  language: string;
-  languageCode: string;
-  isGenerated: boolean;
-  video?: {
-    title: string;
-    creator: string;
-    creatorUrl: string;
-    thumbnailUrl: string;
+function cachedTranscriptPayload(cached: CachedTranscript): TranscriptResult {
+  return {
+    cues: cached.cues,
+    sections: cached.sections,
+    language: cached.language,
+    languageCode: cached.languageCode,
+    isGenerated: cached.isGenerated,
+    video: cached.video,
+    summary: cached.summary
   };
-  summary: { overview: string };
-};
+}
 
 function formatTimestamp(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -132,6 +126,24 @@ function TranscriptSkeleton({ summary = false }: { summary?: boolean }) {
           )
         )}
       </div>
+    </div>
+  );
+}
+
+function TranscriptUnavailable({ message, summary = false }: { message: string; summary?: boolean }) {
+  const Icon = summary ? Sparkles : FileText;
+  return (
+    <div
+      className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-center"
+      role="status"
+    >
+      <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-white text-amber-700 shadow-sm">
+        <Icon className="h-5 w-5" />
+      </span>
+      <p className="mt-3 font-semibold text-amber-950">
+        {summary ? "Summary unavailable" : "Transcript unavailable"}
+      </p>
+      <p className="mt-1 text-sm leading-6 text-amber-900/80">{message}</p>
     </div>
   );
 }
@@ -228,6 +240,8 @@ export function YoutubeStudyPlayer({
   const deleteTimestampNote = useWorkspaceStore((state) => state.deleteTimestampNote);
   const videoMetadata = useWorkspaceStore((state) => state.videoMetadata);
   const cacheVideoMetadata = useWorkspaceStore((state) => state.cacheVideoMetadata);
+  const transcriptCache = useWorkspaceStore((state) => state.transcriptCache);
+  const cacheTranscript = useWorkspaceStore((state) => state.cacheTranscript);
   const playlistCache = useWorkspaceStore((state) => state.playlistCache);
   const cachePlaylist = useWorkspaceStore((state) => state.cachePlaylist);
   const bookmarkedPlaylistIds = useWorkspaceStore(
@@ -404,9 +418,22 @@ export function YoutubeStudyPlayer({
   }, [currentUrl, embedUrl, hasVideo, recordVideoWatch]);
 
   useEffect(() => {
+    if (!workspaceHydrated) return;
     if (!currentVideoId) {
       setTranscript(undefined);
       setTranscriptError("Transcript becomes available when an individual video is loaded.");
+      return;
+    }
+
+    const cachedTranscript = transcriptCache[currentVideoId];
+    const cacheAge = cachedTranscript
+      ? Date.now() - Date.parse(cachedTranscript.cachedAt)
+      : Number.POSITIVE_INFINITY;
+    if (cachedTranscript && cacheAge < TRANSCRIPT_LOCAL_CACHE_TTL) {
+      setTranscript(cachedTranscriptPayload(cachedTranscript));
+      setTranscriptLoading(false);
+      setTranscriptError("");
+      setTranscriptSearch("");
       return;
     }
 
@@ -415,13 +442,53 @@ export function YoutubeStudyPlayer({
     setTranscriptError("");
     setTranscriptSearch("");
     setTranscript(undefined);
-    fetch(`/api/youtube/transcript?videoId=${encodeURIComponent(currentVideoId)}`, {
-      signal: controller.signal
-    })
-      .then(async (response) => {
-        const data = (await response.json()) as TranscriptResult & { error?: string };
-        if (!response.ok) throw new Error(data.error || "Transcript is unavailable.");
+    const transcriptUrl = `/api/youtube/transcript?videoId=${encodeURIComponent(currentVideoId)}`;
+
+    const waitForRetry = () =>
+      new Promise<void>((resolve, reject) => {
+        const timeout = window.setTimeout(resolve, 12_000);
+        controller.signal.addEventListener(
+          "abort",
+          () => {
+            window.clearTimeout(timeout);
+            reject(new DOMException("Request aborted", "AbortError"));
+          },
+          { once: true }
+        );
+      });
+
+    async function loadTranscript() {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const response = await fetch(transcriptUrl, { signal: controller.signal });
+        const data = (await response.json()) as TranscriptResult & {
+          code?: string;
+          error?: string;
+        };
+        if (response.ok) return data;
+
+        const rateLimited =
+          response.status === 429 ||
+          response.status === 503 ||
+          data.code === "IpBlocked" ||
+          data.code === "RequestBlocked";
+        if (rateLimited && attempt === 0) {
+          await waitForRetry();
+          continue;
+        }
+        if (rateLimited) {
+          throw new Error(
+            "YouTube is temporarily limiting transcript requests. We couldn't load this transcript after retrying; please try again in a few minutes."
+          );
+        }
+        throw new Error(data.error || "Transcript is unavailable.");
+      }
+      throw new Error("Transcript is unavailable.");
+    }
+
+    loadTranscript()
+      .then((data) => {
         setTranscript(data);
+        cacheTranscript(currentVideoId, data);
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -432,7 +499,7 @@ export function YoutubeStudyPlayer({
       });
 
     return () => controller.abort();
-  }, [currentVideoId]);
+  }, [cacheTranscript, currentVideoId, transcriptCache, workspaceHydrated]);
 
   useEffect(() => {
     if (!currentVideoId) return;
@@ -736,7 +803,10 @@ export function YoutubeStudyPlayer({
 
                 {learningTab === "summary" ? (
                   <div className="max-w-3xl">
-                    {transcriptLoading || transcriptError ? <TranscriptSkeleton summary /> : null}
+                    {transcriptLoading ? <TranscriptSkeleton summary /> : null}
+                    {!transcriptLoading && transcriptError ? (
+                      <TranscriptUnavailable message={transcriptError} summary />
+                    ) : null}
                     {transcript ? (
                       <div
                         className="rounded-2xl border border-neutral-200 bg-white/75 p-5 sm:p-6"
@@ -815,7 +885,10 @@ export function YoutubeStudyPlayer({
 
                     {toolPanel === "transcript" ? (
                       <div className="min-h-0 flex-1 p-4">
-                        {transcriptLoading || transcriptError ? <TranscriptSkeleton /> : null}
+                        {transcriptLoading ? <TranscriptSkeleton /> : null}
+                        {!transcriptLoading && transcriptError ? (
+                          <TranscriptUnavailable message={transcriptError} />
+                        ) : null}
                         {transcript ? (
                           <>
                             <label className="flex h-11 items-center gap-2 rounded-xl border border-neutral-200 bg-[#f7f7f8] px-3 text-neutral-400 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">

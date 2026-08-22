@@ -38,7 +38,7 @@ type CourseLoadResult = {
   }>;
 };
 
-async function loadCourse(url: string): Promise<CourseLoadResult> {
+async function loadCourse(url: string, signal?: AbortSignal): Promise<CourseLoadResult> {
   const playlistId = youtubePlaylistId(url);
   const videoId = youtubeVideoId(url);
 
@@ -46,7 +46,8 @@ async function loadCourse(url: string): Promise<CourseLoadResult> {
     const response = await fetch("/api/youtube/playlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
+      signal
     });
     if (!response.ok) throw new Error("Course details could not be loaded.");
     const data = (await response.json()) as {
@@ -69,7 +70,8 @@ async function loadCourse(url: string): Promise<CourseLoadResult> {
     const response = await fetch("/api/youtube/metadata", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoIds: [videoId] })
+      body: JSON.stringify({ videoIds: [videoId] }),
+      signal
     });
     if (!response.ok) throw new Error("Video details could not be loaded.");
     const data = (await response.json()) as {
@@ -135,9 +137,10 @@ export function CourseAuditGate({
   useEffect(() => {
     if (!hasHydrated || alreadyAuditing) return;
     let active = true;
+    const controller = new AbortController();
 
     setLoading(true);
-    loadCourse(youtubeUrl)
+    loadCourse(youtubeUrl, controller.signal)
       .then((result) => {
         if (!active) return;
         setCourse(result.course);
@@ -161,6 +164,7 @@ export function CourseAuditGate({
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [
     alreadyAuditing,
@@ -223,16 +227,20 @@ export function CourseAuditGate({
           </div>
 
           <h2 className="mt-6 text-lg font-semibold leading-7 text-neutral-900">
-            {loading ? "Loading course details…" : course.title}
+            {course.title}
           </h2>
-          {!loading ? (
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
               <p>{course.creator} · {course.videoCount} {course.videoCount === 1 ? "video" : "videos"}</p>
               <p className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
                 <Clock3 className="h-4 w-4 text-blue-600" />
                 About {durationLabel} to complete
               </p>
-            </div>
+          </div>
+          {loading ? (
+            <p className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-blue-600">
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              Loading additional course details in the background…
+            </p>
           ) : null}
 
           <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-950">
@@ -243,15 +251,14 @@ export function CourseAuditGate({
           </div>
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button className="rounded-full" disabled={loading || !course.id} onClick={continueToCourse} variant="outline">
+            <Button className="rounded-full" onClick={() => router.push("/playlists")} variant="outline">
               Not now
             </Button>
             <Button
               className="rounded-full px-6"
-              disabled={loading || !course.id}
+              disabled={!course.id}
               onClick={continueToCourse}
             >
-              {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
               Audit course
             </Button>
           </div>

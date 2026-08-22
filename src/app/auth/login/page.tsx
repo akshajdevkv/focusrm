@@ -8,11 +8,18 @@ export default async function LoginPage({
   searchParams: Promise<{
     error?: string | string[];
     message?: string | string[];
+    redirectTo?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const error = Array.isArray(params.error) ? params.error[0] : params.error;
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
+  const requestedNext = Array.isArray(params.redirectTo)
+    ? params.redirectTo[0]
+    : params.redirectTo;
+  const nextPath = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+    ? requestedNext
+    : "/dashboard";
 
   return (
     <div className="gloss-page flex min-h-screen flex-col">
@@ -22,7 +29,7 @@ export default async function LoginPage({
         <p className="mt-2 text-sm text-muted-foreground">
           Continue to your Focus Room workspace.
         </p>
-        <AuthForm mode="login" />
+        <AuthForm mode="login" nextPath={nextPath} />
         {error ? (
           <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>
         ) : null}
