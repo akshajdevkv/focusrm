@@ -51,6 +51,27 @@ user-owned tables and Row Level Security policies.
 - `youtube-transcript-api` Python function for timestamped manual and auto-generated captions
 - Supabase-backed API routes for tasks and focus session history
 
+## YouTube API quota
+
+YouTube Data API projects normally receive a daily quota. `search.list` is the
+expensive operation in this app (100 units per request); playlist and video list
+operations normally cost 1 unit. Search results intentionally use the snippet
+metadata returned by `search.list` and do not make per-result enrichment calls.
+The response is cached for 15 minutes, so avoid reducing that interval.
+
+If the quota is still exhausted:
+
+- Check Google Cloud Console > APIs & Services > YouTube Data API v3 > Quotas to
+  confirm which method consumes the units.
+- Restrict `YOUTUBE_API_KEY` to the YouTube Data API and the production server.
+  Rotate it if it has ever been exposed to the browser or source control.
+- Keep direct playlist URL import available as the low-cost path. It uses list
+  operations rather than `search.list`.
+- For multiple production instances, add a shared cache such as Redis keyed by
+  normalized search query; framework caching alone may be instance-local.
+- Request a quota increase only after caching, abuse controls, and monitoring are
+  in place. Do not create extra projects or rotate keys to bypass the daily limit.
+
 ## Transcript function
 
 Vercel deploys `api/youtube_transcript.py` with its Python runtime. The course player calls the

@@ -5,6 +5,7 @@ export default async function PlaylistsPage({
 }: {
   searchParams: Promise<{
     bookmarked?: string | string[];
+    import?: string | string[];
     search?: string | string[];
   }>;
 }) {
@@ -13,12 +14,14 @@ export default async function PlaylistsPage({
   const bookmarked = Array.isArray(params.bookmarked)
     ? params.bookmarked[0]
     : params.bookmarked;
+  const importYoutube = Array.isArray(params.import) ? params.import[0] : params.import;
 
   return (
     <PlaylistSearchResults
       initialQuery={search || ""}
+      initialImportOpen={importYoutube === "1"}
       initialShowBookmarks={bookmarked === "1"}
-      key={`${search || ""}:${bookmarked || ""}`}
+      key={`${search || ""}:${bookmarked || ""}:${importYoutube || ""}`}
     />
   );
 }

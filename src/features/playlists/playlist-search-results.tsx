@@ -5,18 +5,22 @@ import {
   ArrowRight,
   BookOpen,
   Bookmark,
+  Link2,
   ListVideo,
   Search,
-  SearchX
+  SearchX,
+  X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteFooter } from "@/components/site-footer";
 import { UserProfileMenu } from "@/components/user-profile-menu";
 import { normalizeLearningQuery } from "@/lib/learning-query";
+import { normalizeYoutubeUrl, youtubePlaylistId, youtubeVideoId } from "@/lib/youtube-url";
 import { useWorkspaceStore } from "@/store/workspace-store";
 
 type PlaylistResult = {
@@ -55,13 +59,19 @@ function ResultSkeleton() {
 
 export function PlaylistSearchResults({
   initialQuery,
+  initialImportOpen = false,
   initialShowBookmarks = false
 }: {
   initialQuery: string;
+  initialImportOpen?: boolean;
   initialShowBookmarks?: boolean;
 }) {
+  const router = useRouter();
   const normalizedInitialQuery = normalizeLearningQuery(initialQuery);
   const [searchInput, setSearchInput] = useState(normalizedInitialQuery);
+  const [importOpen, setImportOpen] = useState(initialImportOpen);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [importError, setImportError] = useState("");
   const [showBookmarks, setShowBookmarks] = useState(initialShowBookmarks);
   const [bookmarksReady, setBookmarksReady] = useState(!initialShowBookmarks);
   const query = normalizedInitialQuery;
@@ -105,7 +115,8 @@ export function PlaylistSearchResults({
   useEffect(() => {
     setShowBookmarks(initialShowBookmarks);
     setSearchInput(normalizedInitialQuery);
-  }, [initialShowBookmarks, normalizedInitialQuery]);
+    setImportOpen(initialImportOpen);
+  }, [initialImportOpen, initialShowBookmarks, normalizedInitialQuery]);
 
   useEffect(() => {
     let active = true;
@@ -132,6 +143,20 @@ export function PlaylistSearchResults({
     }
   }
 
+  function handleImport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedUrl = normalizeYoutubeUrl(youtubeUrl);
+    const mediaId = youtubePlaylistId(normalizedUrl) || youtubeVideoId(normalizedUrl);
+
+    if (!normalizedUrl || !mediaId) {
+      setImportError("Paste a valid YouTube video or playlist URL.");
+      return;
+    }
+
+    setImportError("");
+    router.push(`/learn/${mediaId}`);
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f7f8] text-[#1c1c1c]">
       <header className="sticky top-0 z-20 border-b border-neutral-200 bg-[#f7f7f8]/95 backdrop-blur-xl">
@@ -140,19 +165,91 @@ export function PlaylistSearchResults({
             <span className="logo-mark grid h-11 w-11 place-items-center rounded-md text-3xl leading-none">F</span>
             <span className="brand-title text-2xl sm:text-3xl">Focus Room</span>
           </Link>
-          <form className="flex w-full items-center gap-2 lg:ml-12 lg:max-w-2xl" onSubmit={handleSearch}>
-            <div className="relative min-w-0 flex-1">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-              <Input
-                aria-label="Search educational playlists"
-                className="h-12 rounded-full border-neutral-300 bg-white pl-12 pr-4 shadow-none"
-                onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="What do you want to learn?"
-                value={searchInput}
-              />
-            </div>
-            <Button className="h-12 rounded-full px-5" type="submit">Search</Button>
-          </form>
+          <div className="w-full lg:ml-12 lg:max-w-3xl">
+            <form className="flex w-full items-center gap-2" onSubmit={handleSearch}>
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                <Input
+                  aria-label="Search educational playlists"
+                  className="h-12 rounded-full border-neutral-300 bg-white pl-12 pr-4 shadow-none"
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="What do you want to learn?"
+                  value={searchInput}
+                />
+              </div>
+              <Button className="h-12 rounded-full px-5" type="submit">Search</Button>
+              <Button
+                aria-expanded={importOpen}
+                className="hidden h-12 shrink-0 rounded-full px-5 sm:inline-flex"
+                onClick={() => {
+                  setImportOpen((open) => !open);
+                  setImportError("");
+                }}
+                type="button"
+                variant="outline"
+              >
+                <Link2 className="h-4 w-4" />
+                Import URL
+              </Button>
+            </form>
+            <Button
+              aria-expanded={importOpen}
+              className="mt-2 h-11 w-full rounded-full sm:hidden"
+              onClick={() => {
+                setImportOpen((open) => !open);
+                setImportError("");
+              }}
+              type="button"
+              variant="outline"
+            >
+              <Link2 className="h-4 w-4" />
+              Import YouTube URL
+            </Button>
+            {importOpen ? (
+              <form className="mt-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-lg" onSubmit={handleImport}>
+                <div className="flex items-center gap-2">
+                  <div className="relative min-w-0 flex-1">
+                    <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                    <Input
+                      aria-describedby={importError ? "youtube-import-error" : undefined}
+                      aria-invalid={Boolean(importError)}
+                      aria-label="YouTube video or playlist URL"
+                      autoFocus
+                      className="h-11 pl-10"
+                      onChange={(event) => {
+                        setYoutubeUrl(event.target.value);
+                        if (importError) setImportError("");
+                      }}
+                      placeholder="Paste a YouTube video or playlist URL"
+                      value={youtubeUrl}
+                    />
+                  </div>
+                  <Button className="h-11 shrink-0" type="submit">Open</Button>
+                  <Button
+                    aria-label="Close import"
+                    className="h-11 w-11 shrink-0"
+                    onClick={() => {
+                      setImportOpen(false);
+                      setImportError("");
+                    }}
+                    type="button"
+                    variant="icon"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {importError ? (
+                  <p className="mt-2 px-1 text-sm font-medium text-red-600" id="youtube-import-error" role="alert">
+                    {importError}
+                  </p>
+                ) : (
+                  <p className="mt-2 px-1 text-xs text-neutral-500">
+                    Supports youtube.com, youtu.be, Shorts, videos, and playlists.
+                  </p>
+                )}
+              </form>
+            ) : null}
+          </div>
           <div className="absolute right-5 top-4 sm:right-8 lg:static lg:ml-auto">
             <UserProfileMenu />
           </div>

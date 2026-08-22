@@ -57,11 +57,21 @@ export async function GET(request: NextRequest) {
   const searchResponse = await fetch(searchUrl, { next: { revalidate: 900 } });
   if (!searchResponse.ok) {
     const details = (await searchResponse.json().catch(() => null)) as
-      | { error?: { message?: string } }
+      | { error?: { message?: string; errors?: Array<{ reason?: string }> } }
       | null;
+    const reason = details?.error?.errors?.[0]?.reason;
+    const quotaExceeded = reason === "quotaExceeded" || reason === "dailyLimitExceeded";
     return NextResponse.json(
-      { error: details?.error?.message || "YouTube playlist search failed." },
-      { status: searchResponse.status === 403 ? 429 : 502 }
+      {
+        code: quotaExceeded ? "YOUTUBE_QUOTA_EXCEEDED" : "YOUTUBE_SEARCH_FAILED",
+        error: quotaExceeded
+          ? "YouTube's daily API quota is exhausted. Search will return after the quota resets; you can still paste a playlist URL."
+          : details?.error?.message || "YouTube playlist search failed."
+      },
+      {
+        status: quotaExceeded ? 429 : 502,
+        headers: quotaExceeded ? { "Retry-After": "3600" } : undefined
+      }
     );
   }
 
@@ -84,58 +94,14 @@ export async function GET(request: NextRequest) {
         title: item.snippet?.title || "Untitled playlist",
         description: item.snippet?.description || "",
         creator: item.snippet?.channelTitle || "YouTube creator",
-        fallbackThumbnailUrl: bestThumbnail(item.snippet?.thumbnails)
+        thumbnailUrl: bestThumbnail(item.snippet?.thumbnails),
+        firstVideoId: "",
+        videoCount: 0
       }))
       .filter((playlist) => playlist.id) || [];
 
-  const results = await Promise.all(
-    matches.map(async (playlist) => {
-      const itemsUrl = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
-      itemsUrl.searchParams.set("part", "snippet,contentDetails");
-      itemsUrl.searchParams.set("playlistId", playlist.id);
-      itemsUrl.searchParams.set("maxResults", "1");
-      itemsUrl.searchParams.set("key", apiKey);
-
-      const detailsUrl = new URL("https://www.googleapis.com/youtube/v3/playlists");
-      detailsUrl.searchParams.set("part", "contentDetails");
-      detailsUrl.searchParams.set("id", playlist.id);
-      detailsUrl.searchParams.set("key", apiKey);
-
-      const [itemsResponse, detailsResponse] = await Promise.all([
-        fetch(itemsUrl, { next: { revalidate: 900 } }),
-        fetch(detailsUrl, { next: { revalidate: 900 } })
-      ]);
-
-      const itemsData = itemsResponse.ok
-        ? ((await itemsResponse.json()) as {
-            items?: Array<{
-              snippet?: { thumbnails?: ThumbnailSet };
-              contentDetails?: { videoId?: string };
-            }>;
-          })
-        : undefined;
-      const detailsData = detailsResponse.ok
-        ? ((await detailsResponse.json()) as {
-            items?: Array<{ contentDetails?: { itemCount?: number } }>;
-          })
-        : undefined;
-      const firstVideo = itemsData?.items?.[0];
-
-      return {
-        id: playlist.id,
-        title: playlist.title,
-        description: playlist.description,
-        creator: playlist.creator,
-        thumbnailUrl:
-          bestThumbnail(firstVideo?.snippet?.thumbnails) || playlist.fallbackThumbnailUrl,
-        firstVideoId: firstVideo?.contentDetails?.videoId || "",
-        videoCount: detailsData?.items?.[0]?.contentDetails?.itemCount || 0
-      };
-    })
-  );
-
   return NextResponse.json(
-    { query: parsedQuery.data.q, results },
+    { query: parsedQuery.data.q, results: matches },
     { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800" } }
   );
 }
