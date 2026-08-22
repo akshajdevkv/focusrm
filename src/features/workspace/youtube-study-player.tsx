@@ -134,16 +134,16 @@ function TranscriptUnavailable({ message, summary = false }: { message: string; 
   const Icon = summary ? Sparkles : FileText;
   return (
     <div
-      className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-center"
+      className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-[0_10px_30px_rgba(0,0,0,0.04)]"
       role="status"
     >
-      <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-white text-amber-700 shadow-sm">
+      <span className="mx-auto grid h-11 w-11 place-items-center rounded-full border border-neutral-200 bg-[#f7f7f8] text-neutral-600 shadow-sm">
         <Icon className="h-5 w-5" />
       </span>
-      <p className="mt-3 font-semibold text-amber-950">
+      <p className="mt-3 font-semibold text-neutral-900">
         {summary ? "Summary unavailable" : "Transcript unavailable"}
       </p>
-      <p className="mt-1 text-sm leading-6 text-amber-900/80">{message}</p>
+      <p className="mt-1 text-sm leading-6 text-neutral-500">{message}</p>
     </div>
   );
 }
