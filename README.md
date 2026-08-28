@@ -20,6 +20,8 @@ Required environment variables:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SITE_URL` (your canonical production origin, for example `https://focusroom.club`)
+- `NEXT_PUBLIC_POSTHOG_KEY` (your PostHog project API key; analytics stay disabled when omitted)
+- `NEXT_PUBLIC_POSTHOG_HOST` (use `https://us.i.posthog.com` or your PostHog region/self-hosted endpoint)
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `YOUTUBE_API_KEY`
 
